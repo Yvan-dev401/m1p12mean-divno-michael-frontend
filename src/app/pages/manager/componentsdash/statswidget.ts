@@ -50,7 +50,7 @@ import { CommonModule } from '@angular/common';
                 <span class="text-muted-color">newly registered</span>
             </div>
         </div>
-        <!-- <div class="col-span-12 lg:col-span-6 xl:col-span-3">
+        <div class="col-span-12 lg:col-span-6 xl:col-span-3">
             <div class="card mb-0">
                 <div class="flex justify-between mb-4">
                     <div>
@@ -64,7 +64,6 @@ import { CommonModule } from '@angular/common';
                 <span class="text-primary font-medium">85 </span>
                 <span class="text-muted-color">responded</span>
             </div>
-        </div> -->
-        `
+        </div>`
 })
 export class StatsWidget {}

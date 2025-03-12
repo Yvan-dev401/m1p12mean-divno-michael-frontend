@@ -12,7 +12,7 @@ import { NodeService } from '../service/node.service';
     imports: [CommonModule, FormsModule, TreeModule, TreeTableModule],
     template: `
         <div class="card">
-            <div class="font-semibold text-xl mb-4">TreeTable</div>
+            <div class="font-semibold text-xl mb-4">Calendrier</div>
             <p-treetable [value]="treeTableValue" [columns]="cols" selectionMode="checkbox" [(selectionKeys)]="selectedTreeTableValue" dataKey="key" [scrollable]="true" [tableStyle]="{ 'min-width': '50rem' }">
                 <ng-template #header let-columns>
                     <tr>
@@ -25,8 +25,10 @@ import { NodeService } from '../service/node.service';
                     <tr [ttRow]="rowNode" [ttSelectableRow]="rowNode">
                         <td *ngFor="let col of columns; let i = index">
                             <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0" />
-                            <p-treeTableCheckbox [value]="rowNode" *ngIf="i === 0" />
-                            {{ rowData[col.field] }}
+                            <!-- <p-treeTableCheckbox [value]="rowNode" *ngIf="i === 0" /> -->
+                            <span [style.color]="getColor(rowData[col.field])">
+                                {{ rowData[col.field] }}
+                            </span>
                         </td>
                     </tr>
                 </ng-template>
@@ -53,9 +55,9 @@ export class Calendar implements OnInit {
         this.nodeService.getTreeTableNodes().then((files: any) => (this.treeTableValue = files));
 
         this.cols = [
-            { field: 'name', header: 'Name' },
-            { field: 'size', header: 'Size' },
-            { field: 'type', header: 'Type' }
+            { field: 'heure', header: 'Heure' },
+            // { field: 'size', header: 'Size' },
+            { field: 'disponibilite', header: 'Disponibilité' }
         ];
 
         this.selectedTreeTableValue = {
@@ -64,5 +66,16 @@ export class Calendar implements OnInit {
                 checked: true
             }
         };
+    }
+
+    getColor(disponibilite: string): string {
+        switch (disponibilite) {
+            case 'Pris':
+                return 'red';
+            case 'Disponible':
+                return 'green';
+            default:
+                return 'black';
+        }
     }
 }

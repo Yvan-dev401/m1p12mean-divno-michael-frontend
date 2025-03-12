@@ -78,59 +78,91 @@ export class NodeService {
             {
                 key: '0',
                 data: {
-                    name: 'Applications',
+                    heure: 'Lundi',
                     size: '100kb',
-                    type: 'Folder'
+                    disponibilite: 'Disponible'
                 },
                 children: [
                     {
                         key: '0-0',
                         data: {
-                            name: 'Angular',
+                            heure: '08h00 - 09h00',
                             size: '25kb',
-                            type: 'Folder'
-                        },
-                        children: [
+                            disponibilite: 'Pris'
+                        }
+                        /* children: [
                             {
                                 key: '0-0-0',
                                 data: {
-                                    name: 'angular.app',
+                                    heure: '09h00 - 10h00',
                                     size: '10kb',
-                                    type: 'Application'
+                                    disponibilite: 'Application'
                                 }
                             },
                             {
                                 key: '0-0-1',
                                 data: {
-                                    name: 'native.app',
+                                    heure: '10h00 - 11h00',
                                     size: '10kb',
-                                    type: 'Application'
+                                    disponibilite: 'Application'
                                 }
                             },
                             {
                                 key: '0-0-2',
                                 data: {
-                                    name: 'mobile.app',
+                                    heure: '11h00 - 12h00',
                                     size: '5kb',
-                                    type: 'Application'
+                                    disponibilite: 'Application'
                                 }
                             }
-                        ]
+                        ] */
                     },
                     {
                         key: '0-1',
                         data: {
-                            name: 'editor.app',
+                            heure: '09h00 - 10h00',
                             size: '25kb',
-                            type: 'Application'
+                            disponibilite: 'Disponible'
                         }
                     },
                     {
                         key: '0-2',
                         data: {
-                            name: 'settings.app',
+                            heure: '10h00 - 11h00',
                             size: '50kb',
-                            type: 'Application'
+                            disponibilite: 'Pris'
+                        }
+                    },
+                    {
+                        key: '0-2',
+                        data: {
+                            heure: '11h00 - 12h00',
+                            size: '50kb',
+                            disponibilite: 'Pris'
+                        }
+                    },
+                    {
+                        key: '0-2',
+                        data: {
+                            heure: '14h00 - 15h00',
+                            size: '50kb',
+                            disponibilite: 'Pris'
+                        }
+                    },
+                    {
+                        key: '0-2',
+                        data: {
+                            heure: '15h00 - 16h00',
+                            size: '50kb',
+                            disponibilite: 'Pris'
+                        }
+                    },
+                    {
+                        key: '0-2',
+                        data: {
+                            heure: '16h00 - 17h00',
+                            size: '50kb',
+                            disponibilite: 'Pris'
                         }
                     }
                 ]
@@ -138,25 +170,57 @@ export class NodeService {
             {
                 key: '1',
                 data: {
-                    name: 'Cloud',
+                    heure: 'Mardi',
                     size: '20kb',
-                    type: 'Folder'
+                    disponibilite: 'Folder'
                 },
                 children: [
                     {
                         key: '1-0',
                         data: {
-                            name: 'backup-1.zip',
+                            heure: '08h00 - 09h00',
                             size: '10kb',
-                            type: 'Zip'
+                            disponibilite: 'Zip'
                         }
                     },
                     {
                         key: '1-1',
                         data: {
-                            name: 'backup-2.zip',
+                            heure: '09h00 - 10h00',
                             size: '10kb',
-                            type: 'Zip'
+                            disponibilite: 'Zip'
+                        }
+                    },
+                    {
+                        key: '1-0',
+                        data: {
+                            heure: '09h00 - 10h00',
+                            size: '10kb',
+                            disponibilite: 'Zip'
+                        }
+                    },
+                    {
+                        key: '1-1',
+                        data: {
+                            heure: '10h00 - 11h00',
+                            size: '10kb',
+                            disponibilite: 'Zip'
+                        }
+                    },
+                    {
+                        key: '1-0',
+                        data: {
+                            heure: '11h00 - 12h00',
+                            size: '10kb',
+                            disponibilite: 'Zip'
+                        }
+                    },
+                    {
+                        key: '1-1',
+                        data: {
+                            heure: '09h00 - 10h00',
+                            size: '10kb',
+                            disponibilite: 'Zip'
                         }
                     }
                 ]
@@ -164,25 +228,25 @@ export class NodeService {
             {
                 key: '2',
                 data: {
-                    name: 'Desktop',
+                    heure: 'Mercredi',
                     size: '150kb',
-                    type: 'Folder'
+                    disponibilite: 'Folder'
                 },
                 children: [
                     {
                         key: '2-0',
                         data: {
-                            name: 'note-meeting.txt',
+                            heure: '08h00 - 09h00',
                             size: '50kb',
-                            type: 'Text'
+                            disponibilite: 'Text'
                         }
                     },
                     {
                         key: '2-1',
                         data: {
-                            name: 'note-todo.txt',
+                            heure: '09h00 - 10h00',
                             size: '100kb',
-                            type: 'Text'
+                            disponibilite: 'Text'
                         }
                     }
                 ]
@@ -190,33 +254,33 @@ export class NodeService {
             {
                 key: '3',
                 data: {
-                    name: 'Documents',
+                    heure: 'Jeudi',
                     size: '75kb',
-                    type: 'Folder'
+                    disponibilite: 'Folder'
                 },
                 children: [
                     {
                         key: '3-0',
                         data: {
-                            name: 'Work',
+                            heure: '10h00 - 11h00',
                             size: '55kb',
-                            type: 'Folder'
+                            disponibilite: 'Folder'
                         },
                         children: [
                             {
                                 key: '3-0-0',
                                 data: {
-                                    name: 'Expenses.doc',
+                                    heure: 'Expenses.doc',
                                     size: '30kb',
-                                    type: 'Document'
+                                    disponibilite: 'Document'
                                 }
                             },
                             {
                                 key: '3-0-1',
                                 data: {
-                                    name: 'Resume.doc',
+                                    heure: 'Resume.doc',
                                     size: '25kb',
-                                    type: 'Resume'
+                                    disponibilite: 'Resume'
                                 }
                             }
                         ]
@@ -224,9 +288,9 @@ export class NodeService {
                     {
                         key: '3-1',
                         data: {
-                            name: 'Home',
+                            heure: '11h00 - 12h00',
                             size: '20kb',
-                            type: 'Folder'
+                            disponibilite: 'Folder'
                         },
                         children: [
                             {
@@ -234,7 +298,7 @@ export class NodeService {
                                 data: {
                                     name: 'Invoices',
                                     size: '20kb',
-                                    type: 'Text'
+                                    disponibilite: 'Text'
                                 }
                             }
                         ]
@@ -242,61 +306,53 @@ export class NodeService {
                 ]
             },
             {
-                key: '4',
+                key: '3',
                 data: {
-                    name: 'Downloads',
-                    size: '25kb',
-                    type: 'Folder'
+                    heure: 'Vendredi',
+                    size: '75kb',
+                    disponibilite: 'Disponible'
                 },
                 children: [
                     {
-                        key: '4-0',
+                        key: '3-0',
                         data: {
-                            name: 'Spanish',
-                            size: '10kb',
-                            type: 'Folder'
+                            heure: '10h00 - 11h00',
+                            size: '55kb',
+                            disponibilite: 'Folder'
                         },
                         children: [
                             {
-                                key: '4-0-0',
+                                key: '3-0-0',
                                 data: {
-                                    name: 'tutorial-a1.txt',
-                                    size: '5kb',
-                                    type: 'Text'
+                                    heure: 'Expenses.doc',
+                                    size: '30kb',
+                                    disponibilite: 'Document'
                                 }
                             },
                             {
-                                key: '4-0-1',
+                                key: '3-0-1',
                                 data: {
-                                    name: 'tutorial-a2.txt',
-                                    size: '5kb',
-                                    type: 'Text'
+                                    heure: 'Resume.doc',
+                                    size: '25kb',
+                                    disponibilite: 'Resume'
                                 }
                             }
                         ]
                     },
                     {
-                        key: '4-1',
+                        key: '3-1',
                         data: {
-                            name: 'Travel',
-                            size: '15kb',
-                            type: 'Text'
+                            heure: '11h00 - 12h00',
+                            size: '20kb',
+                            disponibilite: 'Folder'
                         },
                         children: [
                             {
-                                key: '4-1-0',
+                                key: '3-1-0',
                                 data: {
-                                    name: 'Hotel.pdf',
-                                    size: '10kb',
-                                    type: 'PDF'
-                                }
-                            },
-                            {
-                                key: '4-1-1',
-                                data: {
-                                    name: 'Flight.pdf',
-                                    size: '5kb',
-                                    type: 'PDF'
+                                    name: 'Invoices',
+                                    size: '20kb',
+                                    disponibilite: 'Text'
                                 }
                             }
                         ]
@@ -304,122 +360,56 @@ export class NodeService {
                 ]
             },
             {
-                key: '5',
+                key: '3',
                 data: {
-                    name: 'Main',
-                    size: '50kb',
-                    type: 'Folder'
+                    heure: 'Samedi',
+                    size: '75kb',
+                    disponibilite: 'Pris'
                 },
                 children: [
                     {
-                        key: '5-0',
+                        key: '3-0',
                         data: {
-                            name: 'bin',
-                            size: '50kb',
-                            type: 'Link'
-                        }
+                            heure: '10h00 - 11h00',
+                            size: '55kb',
+                            disponibilite: 'Folder'
+                        },
+                        children: [
+                            {
+                                key: '3-0-0',
+                                data: {
+                                    heure: 'Expenses.doc',
+                                    size: '30kb',
+                                    disponibilite: 'Document'
+                                }
+                            },
+                            {
+                                key: '3-0-1',
+                                data: {
+                                    heure: 'Resume.doc',
+                                    size: '25kb',
+                                    disponibilite: 'Resume'
+                                }
+                            }
+                        ]
                     },
                     {
-                        key: '5-1',
+                        key: '3-1',
                         data: {
-                            name: 'etc',
-                            size: '100kb',
-                            type: 'Link'
-                        }
-                    },
-                    {
-                        key: '5-2',
-                        data: {
-                            name: 'var',
-                            size: '100kb',
-                            type: 'Link'
-                        }
-                    }
-                ]
-            },
-            {
-                key: '6',
-                data: {
-                    name: 'Other',
-                    size: '5kb',
-                    type: 'Folder'
-                },
-                children: [
-                    {
-                        key: '6-0',
-                        data: {
-                            name: 'todo.txt',
-                            size: '3kb',
-                            type: 'Text'
-                        }
-                    },
-                    {
-                        key: '6-1',
-                        data: {
-                            name: 'logo.png',
-                            size: '2kb',
-                            type: 'Picture'
-                        }
-                    }
-                ]
-            },
-            {
-                key: '7',
-                data: {
-                    name: 'Pictures',
-                    size: '150kb',
-                    type: 'Folder'
-                },
-                children: [
-                    {
-                        key: '7-0',
-                        data: {
-                            name: 'barcelona.jpg',
-                            size: '90kb',
-                            type: 'Picture'
-                        }
-                    },
-                    {
-                        key: '7-1',
-                        data: {
-                            name: 'primeng.png',
-                            size: '30kb',
-                            type: 'Picture'
-                        }
-                    },
-                    {
-                        key: '7-2',
-                        data: {
-                            name: 'prime.jpg',
-                            size: '30kb',
-                            type: 'Picture'
-                        }
-                    }
-                ]
-            },
-            {
-                key: '8',
-                data: {
-                    name: 'Videos',
-                    size: '1500kb',
-                    type: 'Folder'
-                },
-                children: [
-                    {
-                        key: '8-0',
-                        data: {
-                            name: 'primefaces.mkv',
-                            size: '1000kb',
-                            type: 'Video'
-                        }
-                    },
-                    {
-                        key: '8-1',
-                        data: {
-                            name: 'intro.avi',
-                            size: '500kb',
-                            type: 'Video'
-                        }
+                            heure: '11h00 - 12h00',
+                            size: '20kb',
+                            disponibilite: 'Folder'
+                        },
+                        children: [
+                            {
+                                key: '3-1-0',
+                                data: {
+                                    name: 'Invoices',
+                                    size: '20kb',
+                                    disponibilite: 'Text'
+                                }
+                            }
+                        ]
                     }
                 ]
             }
