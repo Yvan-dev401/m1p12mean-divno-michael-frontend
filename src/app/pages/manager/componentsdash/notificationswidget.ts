@@ -15,7 +15,7 @@ import { MenuModule } from 'primeng/menu';
             </div>
         </div>
 
-        <span class="block text-muted-color font-medium mb-4">TODAY</span>
+        <span class="block text-muted-color font-medium mb-4">Aujourd'hui</span>
         <ul class="p-0 mx-0 mt-0 mb-6 list-none">
             <li class="flex items-center py-2 border-b border-surface">
                 <div class="w-12 h-12 flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-full mr-4 shrink-0">
@@ -32,10 +32,6 @@ import { MenuModule } from 'primeng/menu';
                 </div>
                 <span class="text-surface-700 dark:text-surface-100 leading-normal">Your request for withdrawal of <span class="text-primary font-bold">$2500.00</span> has been initiated.</span>
             </li>
-        </ul>
-
-        <span class="block text-muted-color font-medium mb-4">YESTERDAY</span>
-        <ul class="p-0 m-0 list-none mb-6">
             <li class="flex items-center py-2 border-b border-surface">
                 <div class="w-12 h-12 flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-full mr-4 shrink-0">
                     <i class="pi pi-dollar !text-xl text-blue-500"></i>
@@ -54,9 +50,6 @@ import { MenuModule } from 'primeng/menu';
                     <span class="text-surface-700 dark:text-surface-100">has posted a new questions about your product.</span>
                 </span>
             </li>
-        </ul>
-        <span class="block text-muted-color font-medium mb-4">LAST WEEK</span>
-        <ul class="p-0 m-0 list-none">
             <li class="flex items-center py-2 border-b border-surface">
                 <div class="w-12 h-12 flex items-center justify-center bg-green-100 dark:bg-green-400/10 rounded-full mr-4 shrink-0">
                     <i class="pi pi-arrow-up !text-xl text-green-500"></i>
@@ -70,6 +63,9 @@ import { MenuModule } from 'primeng/menu';
                 <span class="text-surface-900 dark:text-surface-0 leading-normal"><span class="text-primary font-bold">12</span> users have added your products to their wishlist.</span>
             </li>
         </ul>
+
+        <span class="block text-muted-color font-medium mb-4">Semaine</span>
+        <ul class="p-0 m-0 list-none"></ul>
     </div>`
 })
 export class NotificationsWidget {

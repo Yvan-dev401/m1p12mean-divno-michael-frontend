@@ -32,6 +32,11 @@ export class AppMenu {
                 routerLink: ['/pages'],
                 items: [
                     {
+                        label: 'Véhicule',
+                        icon: 'pi pi-fw pi-car',
+                        routerLink: ['/pages/client/vehicule']
+                    },
+                    {
                         label: 'Intervention',
                         icon: 'pi pi-fw pi-exclamation-circle',
                         items: [
@@ -89,7 +94,19 @@ export class AppMenu {
                     {
                         label: 'Pièces',
                         icon: 'pi pi-fw pi-cog',
-                        routerLink: ['/pages/manager/pieces']
+                        // routerLink: ['/pages/manager/pieces']
+                        items: [
+                            {
+                                label: 'Liste',
+                                icon: 'pi pi-fw pi-list',
+                                routerLink: ['/pages/manager/pieces']
+                            },
+                            {
+                                label: 'Commande',
+                                icon: 'pi pi-fw pi-shopping-cart',
+                                routerLink: ['/pages/manager/order']
+                            }
+                        ]
                     },
                     {
                         label: 'Recettes',

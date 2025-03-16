@@ -20,6 +20,8 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { Product, ProductService } from '../service/product.service';
+import { CountryService } from '../service/country.service';
+import { AutoComplete } from 'primeng/autocomplete';
 
 interface Column {
     field: string;
@@ -30,6 +32,11 @@ interface Column {
 interface ExportColumn {
     title: string;
     dataKey: string;
+}
+
+interface AutoCompleteCompleteEvent {
+    originalEvent: Event;
+    query: string;
 }
 
 @Component({
@@ -55,16 +62,10 @@ interface ExportColumn {
         ConfirmDialogModule,
         ProgressBarModule,
         IconFieldModule,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        AutoComplete
     ],
     template: `
-        <!-- <p-toolbar styleClass="mb-6">
-            <ng-template #start>
-                <p-button label="Nouveau intervention" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
-                <p-button severity="secondary" label="Supprimer" icon="pi pi-trash" outlined (onClick)="deleteSelectedProducts()" [disabled]="!selectedProducts || !selectedProducts.length" />
-            </ng-template>
-        </p-toolbar> -->
-
         <p-table
             #dt
             [value]="products()"
@@ -83,10 +84,10 @@ interface ExportColumn {
             <ng-template #caption>
                 <div class="flex items-center justify-between">
                     <h5 class="m-0">Liste des interventions en cours</h5>
-                    <p-iconfield>
+                    <!-- <p-iconfield>
                         <p-inputicon styleClass="pi pi-search" />
                         <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher..." />
-                    </p-iconfield>
+                    </p-iconfield> -->
                 </div>
             </ng-template>
             <ng-template #header>
@@ -99,10 +100,10 @@ interface ExportColumn {
                         Date et heure
                         <p-sortIcon field="name" />
                     </th>
-                    <!-- <th pSortableColumn="price" style="min-width: 8rem">
-                        Price
-                        <p-sortIcon field="price" />
-                    </th> -->
+                    <th pSortableColumn="name" style="min-width:16rem">
+                        Mécanicien
+                        <p-sortIcon field="name" />
+                    </th>
                     <th pSortableColumn="category" style="min-width:10rem">
                         Type
                         <p-sortIcon field="category" />
@@ -125,9 +126,9 @@ interface ExportColumn {
                     <td style="width: 3rem">
                         <p-tableCheckbox [value]="product" />
                     </td>
-                    <!-- <td style="min-width: 12rem">{{ product.code }}</td> -->
                     <td style="min-width: 16rem">{{ product.name }}</td>
                     <!-- <td>{{ product.price | currency: 'USD' }}</td> -->
+                    <td>{{ product.category }}</td>
                     <td>{{ product.category }}</td>
                     <td>
                         <p-progressBar [value]="product.rating * 20"></p-progressBar>
@@ -137,67 +138,12 @@ interface ExportColumn {
                     </td>
                     <td>
                         <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="editProduct(product)" />
-                        <p-button icon="pi pi-cog" class="mr-2" [rounded]="true" [outlined]="true" (click)="editProduct(product)" />
+                        <p-button icon="pi pi-cog" severity="help" class="mr-2" [rounded]="true" [outlined]="true" (click)="listPiece(product)" />
+                        <p-button icon="pi pi-check" class="mr-2" [rounded]="true" [outlined]="true" (click)="taskProduct(product)" />
                     </td>
                 </tr>
             </ng-template>
         </p-table>
-
-        <!-- Insertion intervention -->
-        <p-dialog [(visible)]="productDialog" [style]="{ width: '450px' }" header="Nouveau intervention" [modal]="true">
-            <ng-template #content>
-                <div class="flex flex-col gap-6">
-                    <div>
-                        <label for="inventoryStatus" class="block font-bold mb-3">Type d'intervention</label>
-                        <p-select [(ngModel)]="product.inventoryStatus" inputId="inventoryStatus" [options]="statuses" optionLabel="label" optionValue="label" placeholder="Select a Status" fluid />
-                    </div>
-                    <div>
-                        <label for="description" class="block font-bold mb-3">Description</label>
-                        <textarea id="description" pTextarea [(ngModel)]="product.description" required rows="3" cols="20" fluid></textarea>
-                    </div>
-                    <div>
-                        <label for="name" class="block font-bold mb-3">Date</label>
-                        <input type="datetime-local" pInputText id="name" [(ngModel)]="product.name" required autofocus fluid />
-                        <small class="text-red-500" *ngIf="submitted && !product.name">Name is required.</small>
-                    </div>
-                    <!-- <div>
-                        <label for="name" class="block font-bold mb-3">Name</label>
-                        <input type="text" pInputText id="name" [(ngModel)]="product.name" required autofocus fluid />
-                        <small class="text-red-500" *ngIf="submitted && !product.name">Name is required.</small>
-                    </div> -->
-
-                    <div>
-                        <span class="block font-bold mb-4">Niveau</span>
-                        <div class="grid grid-cols-12 gap-4">
-                            <div class="flex items-center gap-2 col-span-6">
-                                <p-radiobutton id="category1" name="category" value="Accessories" [(ngModel)]="product.category" />
-                                <label for="category1">Normal</label>
-                            </div>
-                            <div class="flex items-center gap-2 col-span-6">
-                                <p-radiobutton id="category2" name="category" value="Clothing" [(ngModel)]="product.category" />
-                                <label for="category2">Urgent</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- <div class="grid grid-cols-12 gap-4">
-                        <div class="col-span-6">
-                            <label for="price" class="block font-bold mb-3">Price</label>
-                            <p-inputnumber id="price" [(ngModel)]="product.price" mode="currency" currency="USD" locale="en-US" fluid />
-                        </div>
-                        <div class="col-span-6">
-                            <label for="quantity" class="block font-bold mb-3">Quantity</label>
-                            <p-inputnumber id="quantity" [(ngModel)]="product.quantity" fluid />
-                        </div>
-                    </div> -->
-                </div>
-            </ng-template>
-
-            <ng-template #footer>
-                <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Enregistrer" icon="pi pi-check" (click)="saveProduct()" />
-            </ng-template>
-        </p-dialog>
 
         <p-dialog [(visible)]="interventionDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
             <ng-template #content>
@@ -209,30 +155,94 @@ interface ExportColumn {
                         <label for="description" class="block font-bold mb-3">Description</label>
                         Marque et modèle, Année de mise en circulation, Kilométrage actuel
                     </div>
+                </div>
+            </ng-template>
+
+            <ng-template #footer>
+                <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
+                <p-button label="Accepter" icon="pi pi-check" (click)="hideDialog()" />
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="pieceDialog" [style]="{ width: '500px', height: '500px' }" header="Intervention [type d'intervention]" [modal]="true">
+            <ng-template #content>
+                <div class="flex flex-col gap-6">
                     <div>
-                        <label for="description" class="block font-bold mb-3">Détails</label>
-                        Marque et modèle, Année de mise en circulation, Kilométrage actuel
+                        <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
                     </div>
                     <div>
-                        <label for="description" class="block font-bold mb-3">Devis</label>
-                        Total : 0.00 €
+                        <label for="description" class="block font-bold mb-3">Pièces nécessaires</label>
+                        <!-- <p-autocomplete [(ngModel)]="selectedCountry" [suggestions]="filteredCountries" (completeMethod)="filterCountry($event)" optionLabel="name" /> -->
+                    </div>
+                    <div *ngFor="let item of items; let i = index">
+                        <div style="display: flex; align-items: center;">
+                            <p-autocomplete [(ngModel)]="item.selectedCountry" [suggestions]="filteredCountries" (completeMethod)="filterCountry($event)" optionLabel="name" placeholder="Pièces" class="custom-autocomplete"></p-autocomplete>
+                            <span style="margin: 0 40px;">x</span>
+                            <input type="number" pInputText [(ngModel)]="item.quantity" placeholder="Quantité" style="width: 100px;" />
+                        </div>
+                    </div>
+                    <p-button icon="pi pi-plus" [rounded]="true" severity="success" [style]="{ display: 'block', margin: '0 auto', 'margin-top': '20px' }" (click)="duplicateItem()" />
+                </div>
+            </ng-template>
+
+            <ng-template #footer>
+                <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
+                <p-button label="Accepter" icon="pi pi-check" (click)="hideDialog()" />
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="taskDialog" [style]="{ width: '500px' }" header="Intervention [type d'intervention]" [modal]="true">
+            <ng-template #content>
+                <div class="flex flex-col gap-6">
+                    <div>
+                        <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
+                    </div>
+                    <div>
+                        <label style='margin-bottom: 20px' for="description" class="block font-bold mb-3">Liste des tâches</label>
+                        <div *ngFor="let task of tasks; let i = index" style="display: flex; align-items: center; margin-bottom: 10px;">
+                            <input type="checkbox" [(ngModel)]="task.completed" style="margin-right: 10px;" />
+                            <span>{{ task.name }}</span>
+                        </div>
                     </div>
                 </div>
             </ng-template>
 
             <ng-template #footer>
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Accepter" icon="pi pi-check" (click)="saveProduct()" />
+                <p-button label="Accepter" icon="pi pi-check" (click)="hideDialog()" />
             </ng-template>
         </p-dialog>
 
         <p-confirmdialog [style]="{ width: '450px' }" />
     `,
-    providers: [MessageService, ProductService, ConfirmationService]
+    providers: [MessageService, ProductService, ConfirmationService, CountryService],
+    styles: [
+        `
+            ::ng-deep .custom-autocomplete .p-autocomplete-input {
+                width: 100% !important; /* Étendre la largeur de l'input */
+                padding: 5px !important; /* Ajuster l'espace interne */
+            }
+
+            ::ng-deep .custom-autocomplete .p-autocomplete {
+                width: 250px !important; /* S'assurer que le composant prend toute la largeur */
+            }
+        `
+    ]
 })
 export class Dashboard implements OnInit {
     productDialog: boolean = false;
     interventionDialog: boolean = false;
+    taskDialog: boolean = false;
+    pieceDialog: boolean = false;
+    countries: any[] | undefined;
+    quantity: number = 0;
+    selectedCountry: any;
+
+    tasks: { name: string; completed: boolean }[] = [];
+
+    items: { selectedCountry: any; quantity: number }[] = [];
+
+    filteredCountries: any[] = [];
 
     products = signal<Product[]>([]);
 
@@ -253,11 +263,45 @@ export class Dashboard implements OnInit {
     constructor(
         private productService: ProductService,
         private messageService: MessageService,
-        private confirmationService: ConfirmationService
+        private confirmationService: ConfirmationService,
+        private countryService: CountryService
     ) {}
 
     ngOnInit() {
         this.loadDemoData();
+        this.countryService.getCountries().then((countries) => {
+            this.countries = countries;
+        });
+        this.items.push({ selectedCountry: null, quantity: 0 });
+        this.loadTasks();
+    }
+
+    loadTasks() {
+        this.tasks = [
+            { name: 'Vérification des freins', completed: false },
+            { name: "Changement d'huile", completed: false },
+            { name: 'Inspection des pneus', completed: false },
+            { name: 'Test de batterie', completed: false }
+        ];
+    }
+
+    duplicateItem() {
+        const newItem = { selectedCountry: null, quantity: 0 };
+        this.items.push(newItem);
+    }
+
+    filterCountry(event: AutoCompleteCompleteEvent) {
+        let filtered: any[] = [];
+        let query = event.query;
+
+        for (let i = 0; i < (this.countries as any[]).length; i++) {
+            let country = (this.countries as any[])[i];
+            if (country.name.toLowerCase().indexOf(query.toLowerCase()) == 0) {
+                filtered.push(country);
+            }
+        }
+
+        this.filteredCountries = filtered;
     }
 
     loadDemoData() {
@@ -296,49 +340,19 @@ export class Dashboard implements OnInit {
         this.interventionDialog = true;
     }
 
-    // Suppression intervention sélectionné
-    deleteSelectedProducts() {
-        this.confirmationService.confirm({
-            message: 'Are you sure you want to delete the selected products?',
-            header: 'Confirm',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                this.products.set(this.products().filter((val) => !this.selectedProducts?.includes(val)));
-                this.selectedProducts = null;
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Products Deleted',
-                    life: 3000
-                });
-            }
-        });
+    listPiece(product: Product) {
+        this.product = { ...product };
+        this.pieceDialog = true;
+    }
+
+    taskProduct(product: Product) {
+        this.product = { ...product };
+        this.taskDialog = true;
     }
 
     hideDialog() {
         this.productDialog = false;
         this.submitted = false;
-    }
-
-    findIndexById(id: string): number {
-        let index = -1;
-        for (let i = 0; i < this.products().length; i++) {
-            if (this.products()[i].id === id) {
-                index = i;
-                break;
-            }
-        }
-
-        return index;
-    }
-
-    createId(): string {
-        let id = '';
-        var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        for (var i = 0; i < 5; i++) {
-            id += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return id;
     }
 
     getSeverity(status: string) {
@@ -375,33 +389,24 @@ export class Dashboard implements OnInit {
         }
     }
 
-    saveProduct() {
-        this.submitted = true;
-        let _products = this.products();
-        if (this.product.name?.trim()) {
-            if (this.product.id) {
-                _products[this.findIndexById(this.product.id)] = this.product;
-                this.products.set([..._products]);
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Product Updated',
-                    life: 3000
-                });
-            } else {
-                this.product.id = this.createId();
-                this.product.image = 'product-placeholder.svg';
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Product Created',
-                    life: 3000
-                });
-                this.products.set([..._products, this.product]);
-            }
-
-            this.productDialog = false;
-            this.product = {};
+    createId(): string {
+        let id = '';
+        var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        for (var i = 0; i < 5; i++) {
+            id += chars.charAt(Math.floor(Math.random() * chars.length));
         }
+        return id;
+    }
+
+    findIndexById(id: string): number {
+        let index = -1;
+        for (let i = 0; i < this.products().length; i++) {
+            if (this.products()[i].id === id) {
+                index = i;
+                break;
+            }
+        }
+
+        return index;
     }
 }

@@ -155,7 +155,7 @@ interface ExportColumn {
                         <textarea id="description" pTextarea [(ngModel)]="product.description" required rows="3" cols="20" fluid></textarea>
                     </div>
                     <div>
-                        <label for="name" class="block font-bold mb-3">Date</label>
+                        <label for="name" class="block font-bold mb-3">Date d'intervention</label>
                         <input type="datetime-local" pInputText id="name" [(ngModel)]="product.name" required autofocus fluid />
                         <small class="text-red-500" *ngIf="submitted && !product.name">Name is required.</small>
                     </div>

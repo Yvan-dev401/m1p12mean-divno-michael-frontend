@@ -5,14 +5,26 @@ import { FormsModule } from '@angular/forms';
 import { TreeTableModule } from 'primeng/treetable';
 import { CommonModule } from '@angular/common';
 import { NodeService } from '../service/node.service';
+import { DatePickerModule } from 'primeng/datepicker';
+import { FluidModule } from 'primeng/fluid';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
     selector: 'app-calendar',
-    standalone: true,
-    imports: [CommonModule, FormsModule, TreeModule, TreeTableModule],
+    imports: [CommonModule, FormsModule, TreeModule, TreeTableModule, DatePickerModule, FluidModule, ButtonModule],
+    // imports: [CommonModule, FormsModule, TreeModule, TreeTableModule, DatePickerModule, FluidModule],
     template: `
         <div class="card">
             <div class="font-semibold text-xl mb-4">Calendrier</div>
+
+            <div class="flex-auto mb-5">
+                <label for="icondisplay" class="font-bold block mb-2"> Filtrer </label>
+                <div style="display: flex; align-items: center;">
+                    <p-datepicker [(ngModel)]="date2" [iconDisplay]="'input'" [showIcon]="true" inputId="icondisplay" />
+                    <button pButton type="button" label="Filtrer" class="ml-2" (click)="filterByDate()"></button>
+                </div>
+            </div>
+
             <p-treetable [value]="treeTableValue" [columns]="cols" selectionMode="checkbox" [(selectionKeys)]="selectedTreeTableValue" dataKey="key" [scrollable]="true" [tableStyle]="{ 'min-width': '50rem' }">
                 <ng-template #header let-columns>
                     <tr>
@@ -48,6 +60,8 @@ export class Calendar implements OnInit {
 
     cols: any[] = [];
 
+    date2: Date | undefined;
+
     nodeService = inject(NodeService);
 
     ngOnInit() {
@@ -77,5 +91,9 @@ export class Calendar implements OnInit {
             default:
                 return 'black';
         }
+    }
+
+    filterByDate() {
+        // Logique de filtrage par date
     }
 }
