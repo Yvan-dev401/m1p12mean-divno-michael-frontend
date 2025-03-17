@@ -19,6 +19,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { CheckboxModule } from 'primeng/checkbox';
 import { Product, ProductService } from '../service/product.service';
 import { CountryService } from '../service/country.service';
 import { AutoComplete } from 'primeng/autocomplete';
@@ -62,7 +63,8 @@ interface AutoCompleteCompleteEvent {
         ConfirmDialogModule,
         ProgressBarModule,
         IconFieldModule,
-        ConfirmDialogModule,
+        AutoComplete,
+        CheckboxModule,
         AutoComplete
     ],
     template: `
@@ -137,7 +139,7 @@ interface AutoCompleteCompleteEvent {
                         <p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus))" />
                     </td>
                     <td>
-                        <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="editProduct(product)" />
+                        <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="interventionOpen(product)" />
                         <p-button icon="pi pi-cog" severity="help" class="mr-2" [rounded]="true" [outlined]="true" (click)="listPiece(product)" />
                         <p-button icon="pi pi-check" class="mr-2" [rounded]="true" [outlined]="true" (click)="taskProduct(product)" />
                     </td>
@@ -171,6 +173,11 @@ interface AutoCompleteCompleteEvent {
                         <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
                     </div>
                     <div>
+                        <label for="name" class="block font-bold mb-3">Date fin d'intervention</label>
+                        <input type="datetime-local" pInputText id="name" [(ngModel)]="product.name" required autofocus fluid />
+                        <small class="text-red-500" *ngIf="submitted && !product.name">La date est requis.</small>
+                    </div>
+                    <div>
                         <label for="description" class="block font-bold mb-3">Pièces nécessaires</label>
                         <!-- <p-autocomplete [(ngModel)]="selectedCountry" [suggestions]="filteredCountries" (completeMethod)="filterCountry($event)" optionLabel="name" /> -->
                     </div>
@@ -181,11 +188,11 @@ interface AutoCompleteCompleteEvent {
                             <input type="number" pInputText [(ngModel)]="item.quantity" placeholder="Quantité" style="width: 100px;" />
                         </div>
                     </div>
-                    <p-button icon="pi pi-plus" [rounded]="true" severity="success" [style]="{ display: 'block', margin: '0 auto', 'margin-top': '20px' }" (click)="duplicateItem()" />
                 </div>
             </ng-template>
 
             <ng-template #footer>
+                <p-button icon="pi pi-plus" [rounded]="true" [text]="true" [raised]="true" severity="success" [style]="{ display: 'block', margin: '0 auto' }" (click)="duplicateItem()" />
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
                 <p-button label="Accepter" icon="pi pi-check" (click)="hideDialog()" />
             </ng-template>
@@ -198,9 +205,10 @@ interface AutoCompleteCompleteEvent {
                         <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
                     </div>
                     <div>
-                        <label style='margin-bottom: 20px' for="description" class="block font-bold mb-3">Liste des tâches</label>
+                        <label style="margin-bottom: 20px" for="description" class="block font-bold mb-3">Liste des tâches</label>
                         <div *ngFor="let task of tasks; let i = index" style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <input type="checkbox" [(ngModel)]="task.completed" style="margin-right: 10px;" />
+                            <!-- <input type="checkbox" [(ngModel)]="task.completed" style="margin-right: 10px;" /> -->
+                            <p-checkbox [style]="{ marginRight: '10px' }" inputId="size_normal" name="size" value="Normal" />
                             <span>{{ task.name }}</span>
                         </div>
                     </div>
@@ -230,7 +238,6 @@ interface AutoCompleteCompleteEvent {
     ]
 })
 export class Dashboard implements OnInit {
-    productDialog: boolean = false;
     interventionDialog: boolean = false;
     taskDialog: boolean = false;
     pieceDialog: boolean = false;
@@ -332,10 +339,9 @@ export class Dashboard implements OnInit {
     openNew() {
         this.product = {};
         this.submitted = false;
-        this.productDialog = true;
     }
 
-    editProduct(product: Product) {
+    interventionOpen(product: Product) {
         this.product = { ...product };
         this.interventionDialog = true;
     }
@@ -351,7 +357,9 @@ export class Dashboard implements OnInit {
     }
 
     hideDialog() {
-        this.productDialog = false;
+        this.interventionDialog = false;
+        this.taskDialog = false;
+        this.pieceDialog = false;
         this.submitted = false;
     }
 

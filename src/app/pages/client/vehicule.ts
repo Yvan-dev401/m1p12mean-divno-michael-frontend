@@ -107,14 +107,15 @@ interface ExportColumn {
                         <p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus))" />
                     </td>
                     <td>
-                        <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="editProduct(product)" />
+                        <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="detailVehicule(product)" />
+                        <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="updateVehicule()" />
                     </td>
                 </tr>
             </ng-template>
         </p-table>
 
         <!-- Insertion intervention -->
-        <p-dialog [(visible)]="productDialog" [style]="{ width: '450px' }" header="Nouvelle voiture" [modal]="true">
+        <p-dialog [(visible)]="newVehicule" [style]="{ width: '450px' }" header="Nouvelle voiture" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
@@ -128,18 +129,18 @@ interface ExportColumn {
                     <div>
                         <label for="name" class="block font-bold mb-3">Kilométrage</label>
                         <input type="number" pInputText id="name" required autofocus fluid />
-                        <small class="text-red-500" *ngIf="submitted && !product.name">Name is required.</small>
+                        <small class="text-red-500" *ngIf="submitted && !product.name">Le kilométrage est requis.</small>
                     </div>
                 </div>
             </ng-template>
 
             <ng-template #footer>
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Enregistrer" icon="pi pi-check" (click)="saveProduct()" />
+                <p-button label="Enregistrer" icon="pi pi-check" (click)="saveVehicule()" />
             </ng-template>
         </p-dialog>
 
-        <p-dialog [(visible)]="interventionDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
+        <p-dialog [(visible)]="detailDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
@@ -161,8 +162,35 @@ interface ExportColumn {
             </ng-template>
 
             <ng-template #footer>
-                <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Accepter" icon="pi pi-check" (click)="saveProduct()" />
+                <p-button label="Fermer" icon="pi pi-times" text (click)="hideDialog()" />
+                <!-- <p-button label="Accepter" icon="pi pi-check" (click)="detailVehicule()" /> -->
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="updateDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
+            <ng-template #content>
+                <div class="flex flex-col gap-6">
+                    <div>
+                        <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
+                    </div>
+                    <div>
+                        <label for="description" class="block font-bold mb-3">Description</label>
+                        Marque et modèle, Année de mise en circulation, Kilométrage actuel
+                    </div>
+                    <div>
+                        <label for="description" class="block font-bold mb-3">Détails</label>
+                        Marque et modèle, Année de mise en circulation, Kilométrage actuel
+                    </div>
+                    <div>
+                        <label for="description" class="block font-bold mb-3">Devis</label>
+                        Total : 0.00 €
+                    </div>
+                </div>
+            </ng-template>
+
+            <ng-template #footer>
+                <p-button label="Fermer" icon="pi pi-times" text (click)="hideDialog()" />
+                <p-button label="Accepter" icon="pi pi-check" (click)="updateVehicule()" />
             </ng-template>
         </p-dialog>
 
@@ -171,8 +199,9 @@ interface ExportColumn {
     providers: [MessageService, ProductService, ConfirmationService]
 })
 export class Vehicule implements OnInit {
-    productDialog: boolean = false;
-    interventionDialog: boolean = false;
+    newVehicule: boolean = false;
+    detailDialog: boolean = false;
+    updateDialog: boolean = false;
 
     products = signal<Product[]>([]);
 
@@ -228,12 +257,16 @@ export class Vehicule implements OnInit {
     openNew() {
         this.product = {};
         this.submitted = false;
-        this.productDialog = true;
+        this.newVehicule = true;
     }
 
-    editProduct(product: Product) {
+    detailVehicule(product: Product) {
         this.product = { ...product };
-        this.interventionDialog = true;
+        this.detailDialog = true;
+    }
+
+    updateDialogOpen() {
+        this.updateDialog = true;
     }
 
     // Suppression intervention sélectionné
@@ -256,7 +289,9 @@ export class Vehicule implements OnInit {
     }
 
     hideDialog() {
-        this.productDialog = false;
+        this.newVehicule = false;
+        this.detailDialog = false;
+        this.updateDialog = false;
         this.submitted = false;
     }
 
@@ -315,33 +350,7 @@ export class Vehicule implements OnInit {
         }
     }
 
-    saveProduct() {
-        this.submitted = true;
-        let _products = this.products();
-        if (this.product.name?.trim()) {
-            if (this.product.id) {
-                _products[this.findIndexById(this.product.id)] = this.product;
-                this.products.set([..._products]);
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Product Updated',
-                    life: 3000
-                });
-            } else {
-                this.product.id = this.createId();
-                this.product.image = 'product-placeholder.svg';
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Product Created',
-                    life: 3000
-                });
-                this.products.set([..._products, this.product]);
-            }
+    saveVehicule() {}
 
-            this.productDialog = false;
-            this.product = {};
-        }
-    }
+    updateVehicule() {}
 }
