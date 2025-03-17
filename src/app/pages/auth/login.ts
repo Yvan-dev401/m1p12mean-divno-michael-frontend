@@ -7,6 +7,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { RippleModule } from 'primeng/ripple';
 import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
+import { UserService } from '../../services/user/user.service';
+import { CookieService } from 'ngx-cookie-service';
+import { AuthService } from '../../services/user/auth.service';
 
 @Component({
     selector: 'app-login',
@@ -24,32 +27,91 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
                         </div>
 
                         <div>
-                            <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                            <input pInputText id="email1" type="text" placeholder="Adresse email" class="w-full md:w-[30rem] mb-8" [(ngModel)]="email" />
+                          <form (ngSubmit)="login()" >
+
+                            <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Nom d'utilisateur</label>
+                            <input pInputText id="email1" type="text" name="username" placeholder="Nom d'utilisateur" class="w-full md:w-[30rem] mb-8" [(ngModel)]="authUser.username">
 
                             <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Mot de passe</label>
-                            <p-password id="password1" [(ngModel)]="password" placeholder="Mot de passe" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
+                            <p-password id="password1"  name="password" [(ngModel)]="authUser.password" placeholder="Mot de passe" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
 
+                              <p class="text-red-500">{{message}}</p>
+                              
                             <div class="flex items-center justify-between mt-2 mb-8 gap-8">
                                 <div class="flex items-center">
                                     <!-- <p-checkbox [(ngModel)]="checked" id="rememberme1" binary class="mr-2"></p-checkbox>
                                     <label for="rememberme1">Remember me</label> -->
                                     <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Mot de passe oublié ?</span>
                                 </div>
+                               
                                 <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary" routerLink="/auth/signup">S'inscrire?</span>
                             </div>
-                            <p-button label="Sign In" styleClass="w-full" routerLink="/"></p-button>
-                        </div>
+                            <p-button type="submit" label="Connexion" styleClass="w-full" routerLink="/"></p-button>
+                        </form>
+                            </div>
                     </div>
                 </div>
             </div>
         </div>
+
+
     `
 })
 export class Login {
-    email: string = '';
 
-    password: string = '';
+    user = { id: '', iat: '', exp: '' }
+
+    //newUser = { nom: '', username: '', password: '', email: '', role: 'client' };
+    authUser = { username: '', password: '' }
 
     checked: boolean = false;
+
+    message = ''
+
+    constructor(private userService: UserService, private cookieService: CookieService, private authService: AuthService) { }
+
+    ngOnInit(): void {
+
+        const token = this.authService.getToken()
+        console.log(token)
+
+        if (token) {
+            this.user = token
+        }
+
+        //console.log(this.getSessionToken())
+        //this.loadUser()
+        // console.log("test",this.email)
+    }
+
+    getSessionToken(): string | null {
+        return this.cookieService.get('SessionID') || null;
+    }
+
+    login(): void {
+        this.userService.login(this.authUser).subscribe(
+            (response) => {
+                this.authUser = { username: "", password: "" }
+                this.message = "yess"
+                console.log('Réponse de l\'API :', response);
+            },
+            (error) => {
+                if (error.status === 401) {
+                    this.message = error.error.message
+                }
+                else {
+                    this.message = "Erreur"
+                }
+
+            });
+    }
+
+    // onEmailChange(value: string) {
+    //     this.email = value;
+    //     console.log("Email updated:", this.email);
+    //   }
+
+    // loadUser(): void {
+    //     this.userService.getUser().subscribe(data => this.users = data)
+    // }
 }
