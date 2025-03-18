@@ -6,10 +6,11 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { RippleModule } from 'primeng/ripple';
-import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
+import { AppFloatingConfigurator } from '../../layout/component_client/app.floatingconfigurator';
 import { UserService } from '../../services/user/user.service';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../services/user/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-login',
@@ -61,57 +62,29 @@ export class Login {
 
     user = { id: '', iat: '', exp: '' }
 
-    //newUser = { nom: '', username: '', password: '', email: '', role: 'client' };
     authUser = { username: '', password: '' }
 
     checked: boolean = false;
 
     message = ''
 
-    constructor(private userService: UserService, private cookieService: CookieService, private authService: AuthService) { }
-
-    ngOnInit(): void {
-
-        const token = this.authService.getToken()
-        console.log(token)
-
-        if (token) {
-            this.user = token
-        }
-
-        //console.log(this.getSessionToken())
-        //this.loadUser()
-        // console.log("test",this.email)
-    }
-
-    getSessionToken(): string | null {
-        return this.cookieService.get('SessionID') || null;
-    }
+    constructor(private userService: UserService, private router : Router) { }
 
     login(): void {
         this.userService.login(this.authUser).subscribe(
             (response) => {
                 this.authUser = { username: "", password: "" }
-                this.message = "yess"
-                console.log('Réponse de l\'API :', response);
+                this.router.navigate(['/pages/client/history'])
+                // console.log('Réponse de l\'API :', response);
             },
             (error) => {
                 if (error.status === 401) {
                     this.message = error.error.message
                 }
                 else {
-                    this.message = "Erreur"
+                    this.message = error.error.message
                 }
 
             });
     }
-
-    // onEmailChange(value: string) {
-    //     this.email = value;
-    //     console.log("Email updated:", this.email);
-    //   }
-
-    // loadUser(): void {
-    //     this.userService.getUser().subscribe(data => this.users = data)
-    // }
 }

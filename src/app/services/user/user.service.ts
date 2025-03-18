@@ -22,7 +22,7 @@ export class UserService {
   }
 
   login(user:any): Observable<any>{
-    return this.http.post(this.apiLogin, user,{ withCredentials: true });
+    return this.http.post(this.apiLogin, user, { withCredentials: true });
   }
 
   updateUser(id: string, user:any): Observable<any>{

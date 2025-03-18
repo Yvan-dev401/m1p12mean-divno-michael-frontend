@@ -1,23 +1,42 @@
 import { Routes } from '@angular/router';
-import { AppLayout } from './app/layout/component/app.layout';
+import { AppLayout_Client } from './app/layout/component_client/app.layout';
+import { AppLayout_Manager } from './app/layout/component_manager/app.layout';
+import { AppLayout_Mechanics } from './app/layout/component_mechanics/app.layout';
 // import { Dashboard } from './app/pages/dashboard/dashboard';
 import { Login } from './app/pages/auth/login';
-import { Documentation } from './app/pages/documentation/documentation';
-import { Landing } from './app/pages/landing/landing';
 import { Notfound } from './app/pages/notfound/notfound';
+import { AuthGuard } from './app/services/user/auth.guard';
 
 export const appRoutes: Routes = [
     { path: '', component: Login },
     {
         path: '',
-        component: AppLayout,
+        component: AppLayout_Client,
+        canActivate: [],
         children: [
-            { path: 'documentation', component: Documentation },
-            { path: 'pages', loadChildren: () => import('./app/pages/pages.routes') }
+            { path: 'client', loadChildren: () => import('./app/pages/pages.routes_client') }
         ]
     },
 
-    { path: 'landing', component: Landing },
+    {
+        path: '',
+        component: AppLayout_Manager,
+        canActivate: [],
+        children: [
+            { path: 'manager', loadChildren: () => import('./app/pages/pages.routes_manager') }
+        ]
+    },
+
+    {
+        path: '',
+        component: AppLayout_Mechanics,
+        canActivate: [],
+        children: [
+            { path: 'mechanics', loadChildren: () => import('./app/pages/pages.routes_mechanics') }
+        ]
+    },
+
+    
     { path: 'notfound', component: Notfound },
     { path: 'auth', loadChildren: () => import('./app/pages/auth/auth.routes') },
     { path: '**', redirectTo: '/notfound' }
