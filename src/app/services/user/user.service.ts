@@ -9,9 +9,11 @@ export class UserService {
 
   private apiUrl = 'http://localhost:5000/user';
 
-  private apiLogin = 'http://localhost:5000/user/login'
-
   constructor(private http: HttpClient) {}
+
+  getUserById(id: string, user:any): Observable<any>{
+    return this.http.get(`${this.apiUrl}/${id}`, user)
+  }
 
   getUser(): Observable<any>{
     return this.http.get(this.apiUrl)
@@ -22,7 +24,7 @@ export class UserService {
   }
 
   login(user:any): Observable<any>{
-    return this.http.post(this.apiLogin, user, { withCredentials: true });
+    return this.http.post(`${this.apiUrl}/login`, user, { withCredentials: true });
   }
 
   updateUser(id: string, user:any): Observable<any>{

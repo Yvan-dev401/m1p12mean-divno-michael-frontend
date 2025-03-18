@@ -2,18 +2,18 @@ import { Component, Renderer2, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
-import { AppTopbar } from './app.topbar';
+import { AppTopbar } from '../app.topbar';
 import { AppSidebar } from './app.sidebar';
-import { AppFooter } from './app.footer';
+import { AppFooter } from '../app.footer';
 import { LayoutService } from '../service/layout.service';
 
 @Component({
-    selector: 'app-layout',
+    selector: 'app-layout-client',
     standalone: true,
     imports: [CommonModule, AppTopbar, AppSidebar, RouterModule, AppFooter],
     template: `<div class="layout-wrapper" [ngClass]="containerClass">
         <app-topbar></app-topbar>
-        <app-sidebar></app-sidebar>
+        <app-sidebar-client></app-sidebar-client>
         <div class="layout-main-container">
             <div class="layout-main">
                 <router-outlet></router-outlet>

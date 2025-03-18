@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -6,7 +6,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { RippleModule } from 'primeng/ripple';
-import { AppFloatingConfigurator } from '../../layout/component_client/app.floatingconfigurator';
+import { AppFloatingConfigurator } from '../../layout/app.floatingconfigurator';
 import { UserService } from '../../services/user/user.service';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../services/user/auth.service';
@@ -58,9 +58,10 @@ import { Router } from '@angular/router';
 
     `
 })
-export class Login {
+export class Login implements OnInit {
 
-    user = { id: '', iat: '', exp: '' }
+
+    user: any = {}
 
     authUser = { username: '', password: '' }
 
@@ -68,13 +69,23 @@ export class Login {
 
     message = ''
 
-    constructor(private userService: UserService, private router : Router) { }
+    constructor(private userService: UserService, private router : Router, private as: AuthService) { }
+
+    ngOnInit(): void {
+        // this.getRole()
+        // console.log(this.user)
+    }
+
+
+    // getRole(): void{
+    //     this.userService.getUserById("67d0002e360d5465cfade482", this.user);
+    // }
 
     login(): void {
         this.userService.login(this.authUser).subscribe(
             (response) => {
                 this.authUser = { username: "", password: "" }
-                this.router.navigate(['/pages/client/history'])
+                this.router.navigate(['client/vehicule'])
                 // console.log('Réponse de l\'API :', response);
             },
             (error) => {
