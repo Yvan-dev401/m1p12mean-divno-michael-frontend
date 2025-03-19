@@ -47,6 +47,7 @@ import { DropdownModule } from 'primeng/dropdown';
     `
 })
 export class Signup {
+
     email: string = '';
     password: string = '';
     password_confirmed: string = '';

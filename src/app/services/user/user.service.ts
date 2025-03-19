@@ -27,6 +27,10 @@ export class UserService {
     return this.http.post(`${this.apiUrl}/login`, user, { withCredentials: true });
   }
 
+  logout(): Observable<any>{
+    return this.http.get(`${this.apiUrl}/logout`);
+  }
+
   updateUser(id: string, user:any): Observable<any>{
     return this.http.put(`${this.apiUrl}/${id}`, user)
   }

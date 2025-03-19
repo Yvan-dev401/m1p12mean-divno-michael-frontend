@@ -10,6 +10,8 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { OverlayModule, ConnectedPosition } from '@angular/cdk/overlay';
 import { MenubarModule } from 'primeng/menubar';
 import { TabsModule } from 'primeng/tabs';
+import { UserService } from '../services/user/user.service';
+import { response } from 'express';
 
 @Component({
     selector: 'app-topbar',
@@ -96,7 +98,7 @@ export class AppTopbar {
         { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom' }
     ];
 
-    constructor(public layoutService: LayoutService) {}
+    constructor(public layoutService: LayoutService, public userService: UserService, private router : Router) {}
 
     toggleDarkMode() {
         this.layoutService.layoutConfig.update((state) => ({ ...state, darkTheme: !state.darkTheme }));
@@ -111,7 +113,14 @@ export class AppTopbar {
     }
 
     logout() {
-        // Logic to logout
+        this.userService.logout().subscribe(
+            (response => {
+                if(response.st == "yes"){
+                    console.log(response.message)
+                    this.router.navigate(['auth/login'])
+                }
+            })
+        )
     }
 
     toggleProfileMenu() {

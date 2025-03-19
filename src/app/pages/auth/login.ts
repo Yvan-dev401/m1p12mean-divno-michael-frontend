@@ -58,7 +58,7 @@ import { Router } from '@angular/router';
 
     `
 })
-export class Login implements OnInit {
+export class Login{
 
 
     user: any = {}
@@ -71,22 +71,20 @@ export class Login implements OnInit {
 
     constructor(private userService: UserService, private router : Router, private as: AuthService) { }
 
-    ngOnInit(): void {
-        // this.getRole()
-        // console.log(this.user)
-    }
-
-
-    // getRole(): void{
-    //     this.userService.getUserById("67d0002e360d5465cfade482", this.user);
-    // }
-
     login(): void {
         this.userService.login(this.authUser).subscribe(
             (response) => {
                 this.authUser = { username: "", password: "" }
-                this.router.navigate(['client/vehicule'])
-                // console.log('Réponse de l\'API :', response);
+                if( response.data == "client"){
+                    this.router.navigate(['client/vehicule'])
+                }
+                if(  response.data == "mécanicien") {
+                    this.router.navigate(['mechanics/dashboard'])
+                }
+                if(  response.data == "manager"){
+                    this.router.navigate(['manager/dashboard'])
+                }
+                console.log('Réponse :', response);
             },
             (error) => {
                 if (error.status === 401) {
