@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -6,7 +6,11 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { RippleModule } from 'primeng/ripple';
-import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
+import { AppFloatingConfigurator } from '../../layout/app.floatingconfigurator';
+import { UserService } from '../../services/user/user.service';
+import { CookieService } from 'ngx-cookie-service';
+import { AuthService } from '../../services/user/auth.service';
+import { Router } from '@angular/router';
 import { TabsModule } from 'primeng/tabs';
 
 @Component({
@@ -32,32 +36,72 @@ import { TabsModule } from 'primeng/tabs';
                         </div>
 
                         <div>
-                            <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                            <input pInputText id="email1" type="text" placeholder="Adresse email" class="w-full md:w-[30rem] mb-8" [(ngModel)]="email" />
+                          <form (ngSubmit)="login()" >
+
+                            <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Nom d'utilisateur</label>
+                            <input pInputText id="email1" type="text" name="username" placeholder="Nom d'utilisateur" class="w-full md:w-[30rem] mb-8" [(ngModel)]="authUser.username">
 
                             <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Mot de passe</label>
-                            <p-password id="password1" [(ngModel)]="password" placeholder="Mot de passe" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
+                            <p-password id="password1"  name="password" [(ngModel)]="authUser.password" placeholder="Mot de passe" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
 
+                              <p class="text-red-500">{{message}}</p>
+                              
                             <div class="flex items-center justify-between mt-2 mb-8 gap-8">
                                 <div class="flex items-center">
                                     <!-- <p-checkbox [(ngModel)]="checked" id="rememberme1" binary class="mr-2"></p-checkbox>
                                     <label for="rememberme1">Remember me</label> -->
                                     <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Mot de passe oublié ?</span>
                                 </div>
+                               
                                 <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary" routerLink="/auth/signup">S'inscrire?</span>
                             </div>
-                            <p-button label="Sign In" styleClass="w-full" routerLink="/"></p-button>
-                        </div>
+                            <p-button type="submit" label="Connexion" styleClass="w-full" routerLink="/"></p-button>
+                        </form>
+                            </div>
                     </div>
                 </div>
             </div>
         </div>
+
+
     `
 })
-export class Login {
-    email: string = '';
+export class Login{
 
-    password: string = '';
+
+    user: any = {}
+
+    authUser = { username: '', password: '' }
 
     checked: boolean = false;
+
+    message = ''
+
+    constructor(private userService: UserService, private router : Router, private as: AuthService) { }
+
+    login(): void {
+        this.userService.login(this.authUser).subscribe(
+            (response) => {
+                this.authUser = { username: "", password: "" }
+                if( response.data == "client"){
+                    this.router.navigate(['client/vehicule'])
+                }
+                if(  response.data == "mécanicien") {
+                    this.router.navigate(['mechanics/dashboard'])
+                }
+                if(  response.data == "manager"){
+                    this.router.navigate(['manager/dashboard'])
+                }
+                console.log('Réponse :', response);
+            },
+            (error) => {
+                if (error.status === 401) {
+                    this.message = error.error.message
+                }
+                else {
+                    this.message = error.error.message
+                }
+
+            });
+    }
 }
