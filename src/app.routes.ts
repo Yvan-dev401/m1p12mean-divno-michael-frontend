@@ -13,33 +13,26 @@ export const appRoutes: Routes = [
         path: '',
         component: AppLayout_Client,
         canActivate: [AuthGuard],
-        data : {role: 'client'},
-        children: [
-            { path: 'client', loadChildren: () => import('./app/pages/pages.routes_client') }
-        ]
+        data: { role: 'client' },
+        children: [{ path: 'client', loadChildren: () => import('./app/pages/pages.routes_client') }]
     },
 
     {
         path: '',
         component: AppLayout_Manager,
         canActivate: [AuthGuard],
-        data : {role: 'manager'},
-        children: [
-            { path: 'manager', loadChildren: () => import('./app/pages/pages.routes_manager') }
-        ]
+        data: { role: 'manager' },
+        children: [{ path: 'manager', loadChildren: () => import('./app/pages/pages.routes_manager') }]
     },
 
     {
         path: '',
         component: AppLayout_Mechanics,
         canActivate: [AuthGuard],
-        data : {role: 'mechanics'},
-        children: [
-            { path: 'mechanics', loadChildren: () => import('./app/pages/pages.routes_mechanics') }
-        ]
+        data: { role: 'mécanicien' },
+        children: [{ path: 'mechanics', loadChildren: () => import('./app/pages/pages.routes_mechanics') }]
     },
 
-    
     { path: 'notfound', component: Notfound },
     { path: 'auth', loadChildren: () => import('./app/pages/auth/auth.routes') },
     { path: '**', redirectTo: '/notfound' }
