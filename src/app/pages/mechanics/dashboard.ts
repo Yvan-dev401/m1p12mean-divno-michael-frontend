@@ -22,7 +22,9 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { CheckboxModule } from 'primeng/checkbox';
 import { Product, ProductService } from '../service/product.service';
 import { CountryService } from '../service/country.service';
+import { ReparationService, Reparation } from '../service/reparation.service';
 import { AutoComplete } from 'primeng/autocomplete';
+import { HttpClientModule } from '@angular/common/http';
 
 interface Column {
     field: string;
@@ -65,12 +67,13 @@ interface AutoCompleteCompleteEvent {
         IconFieldModule,
         AutoComplete,
         CheckboxModule,
-        AutoComplete
+        AutoComplete,
+        HttpClientModule
     ],
     template: `
         <p-table
             #dt
-            [value]="products()"
+            [value]="reparations"
             [rows]="10"
             [columns]="cols"
             [paginator]="true"
@@ -94,9 +97,9 @@ interface AutoCompleteCompleteEvent {
             </ng-template>
             <ng-template #header>
                 <tr>
-                    <th style="width: 3rem">
+                    <!-- <th style="width: 3rem">
                         <p-tableHeaderCheckbox />
-                    </th>
+                    </th> -->
                     <!-- <th style="min-width: 16rem">Type</th> -->
                     <th pSortableColumn="name" style="min-width:16rem">
                         Date et heure
@@ -123,25 +126,25 @@ interface AutoCompleteCompleteEvent {
             </ng-template>
 
             <!-- Contenu table -->
-            <ng-template #body let-product>
+            <ng-template #body let-reparation>
                 <tr>
-                    <td style="width: 3rem">
+                    <!-- <td style="width: 3rem">
                         <p-tableCheckbox [value]="product" />
-                    </td>
-                    <td style="min-width: 16rem">{{ product.name }}</td>
+                    </td> -->
+                    <td style="min-width: 16rem">{{ reparation.dateDebut }}</td>
                     <!-- <td>{{ product.price | currency: 'USD' }}</td> -->
-                    <td>{{ product.category }}</td>
-                    <td>{{ product.category }}</td>
+                    <td>{{ reparation.mecanicienId }}</td>
+                    <td>{{ reparation.etat }}</td>
                     <td>
-                        <p-progressBar [value]="product.rating * 20"></p-progressBar>
+                        <p-progressBar [value]="20"></p-progressBar>
                     </td>
                     <td>
-                        <p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus))" />
+                        <p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat))" />
                     </td>
                     <td>
-                        <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="interventionOpen(product)" />
-                        <p-button icon="pi pi-cog" severity="help" class="mr-2" [rounded]="true" [outlined]="true" (click)="listPiece(product)" />
-                        <p-button icon="pi pi-check" class="mr-2" [rounded]="true" [outlined]="true" (click)="taskProduct(product)" />
+                        <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="interventionOpen(reparation)" />
+                        <p-button icon="pi pi-cog" severity="help" class="mr-2" [rounded]="true" [outlined]="true" (click)="listPiece(reparation)" />
+                        <p-button icon="pi pi-check" class="mr-2" [rounded]="true" [outlined]="true" (click)="taskProduct(reparation)" />
                     </td>
                 </tr>
             </ng-template>
@@ -194,7 +197,7 @@ interface AutoCompleteCompleteEvent {
             <ng-template #footer>
                 <p-button icon="pi pi-plus" [rounded]="true" [text]="true" [raised]="true" severity="success" [style]="{ display: 'block', margin: '0 auto' }" (click)="duplicateItem()" />
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Accepter" icon="pi pi-check" (click)="hideDialog()" />
+                <p-button label="Accepter" icon="pi pi-check" (click)="saveTask()" />
             </ng-template>
         </p-dialog>
 
@@ -238,23 +241,25 @@ interface AutoCompleteCompleteEvent {
     ]
 })
 export class Dashboard implements OnInit {
+    // Dialog
     interventionDialog: boolean = false;
     taskDialog: boolean = false;
     pieceDialog: boolean = false;
+
+    // Service
     countries: any[] | undefined;
-    quantity: number = 0;
     selectedCountry: any;
-
-    tasks: { name: string; completed: boolean }[] = [];
-
-    items: { selectedCountry: any; quantity: number }[] = [];
-
-    filteredCountries: any[] = [];
-
-    products = signal<Product[]>([]);
-
     product!: Product;
 
+    // Variables
+    reparations: Reparation[] = [];
+    reparation!: Reparation;
+
+    quantity: number = 0;
+    tasks: { name: string; completed: boolean }[] = [];
+    items: { selectedCountry: any; quantity: number }[] = [];
+    filteredCountries: any[] = [];
+    products = signal<Product[]>([]);
     selectedProducts!: Product[] | null;
 
     submitted: boolean = false;
@@ -271,7 +276,8 @@ export class Dashboard implements OnInit {
         private productService: ProductService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
-        private countryService: CountryService
+        private countryService: CountryService,
+        private reparationService: ReparationService
     ) {}
 
     ngOnInit() {
@@ -281,6 +287,14 @@ export class Dashboard implements OnInit {
         });
         this.items.push({ selectedCountry: null, quantity: 0 });
         this.loadTasks();
+        this.loadReparations();
+    }
+
+    loadReparations() {
+        this.reparationService.getReparations().subscribe((data) => {
+            this.reparations = data;
+            console.log('Données de réparation:', this.reparations);
+        });
     }
 
     loadTasks() {
@@ -330,15 +344,6 @@ export class Dashboard implements OnInit {
         ];
 
         this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
-    }
-
-    onGlobalFilter(table: Table, event: Event) {
-        table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
-    }
-
-    openNew() {
-        this.product = {};
-        this.submitted = false;
     }
 
     interventionOpen(product: Product) {
@@ -397,16 +402,27 @@ export class Dashboard implements OnInit {
         }
     }
 
-    createId(): string {
+    saveTask() {}
+
+    /* onGlobalFilter(table: Table, event: Event) {
+        table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
+    } */
+
+    /* openNew() {
+        this.product = {};
+        this.submitted = false;
+    } */
+
+    /* createId(): string {
         let id = '';
         var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         for (var i = 0; i < 5; i++) {
             id += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         return id;
-    }
+    } */
 
-    findIndexById(id: string): number {
+    /* findIndexById(id: string): number {
         let index = -1;
         for (let i = 0; i < this.products().length; i++) {
             if (this.products()[i].id === id) {
@@ -416,5 +432,5 @@ export class Dashboard implements OnInit {
         }
 
         return index;
-    }
+    } */
 }
