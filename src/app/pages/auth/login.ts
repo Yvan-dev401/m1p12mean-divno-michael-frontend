@@ -82,7 +82,6 @@ export class Login{
     login(): void {
         this.userService.login(this.authUser).subscribe(
             (response) => {
-                this.authUser = { username: "", password: "" }
                 if( response.data == "client"){
                     this.router.navigate(['client/vehicule'])
                 }
