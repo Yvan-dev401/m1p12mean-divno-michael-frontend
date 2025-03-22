@@ -180,36 +180,42 @@ interface ExportColumn {
         </p-dialog>
 
         <p-dialog [(visible)]="interventionDialog" [style]="{ width: '450px' }" header="Intervention" [modal]="true">
-            <ng-template #content>
-                <div class="flex flex-col gap-6">
-                    <div>
-                        <label for="description" class="block font-bold mb-3"><p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat || ''))" /></label>
-                    </div>
-                    <div>
-                    <label for="description" class="block font-bold mb-3">Vehicule</label>
-                        Mazda - BT50
-                    </div>
-                    <div>
-                        <label for="description" class="block font-bold mb-3">Description</label>
-                            <ul>Probleme : Problème de caméra de recul</ul>
-                            <ul>Diagnostique : Verifier le camera de recul, ou changer s'il le faut</ul>
-              
-                    </div>
-                    <div>
-                        <label for="description" class="block font-bold mb-3">Détails</label>
-                    </div>
-                    <div>
-                        <label for="description" class="block font-bold mb-3">Devis</label>
-                        Total :{{ total}} €
-                    </div>
-                </div>
-            </ng-template>
+    <ng-template #content>
+        <div class="flex flex-col gap-6">
+            <div>
+                <label for="description" class="block font-bold mb-3">
+                    <p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat || ''))" />
+                </label>
+            </div>
+            <div>
+                <label for="description" class="block font-bold mb-3">Vehicule</label>
+                Mazda - BT50
+            </div>
+            <div>
+                <label for="description" class="block font-bold mb-3">Description</label>
+                <ul>Probleme : Problème de caméra de recul</ul>
+                <ul>Diagnostique : Verifier le camera de recul, ou changer s'il le faut</ul>
+            </div>
+            <div>
+                <label for="description" class="block font-bold mb-3">Détails</label>
+                <ul>
+                    <li *ngFor="let detail of details">
+                        {{ detail.nomPiece }} - {{ detail.prixUnitaire }} €
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <label for="description" class="block font-bold mb-3">Devis</label>
+                Total : {{ total }} €
+            </div>
+        </div>
+    </ng-template>
 
-            <ng-template #footer> 
-                <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Accepter" icon="pi pi-check" (click)="acceptDevis()" />
-            </ng-template>
-        </p-dialog> 
+    <ng-template #footer> 
+        <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
+        <p-button label="Accepter" icon="pi pi-check" (click)="acceptDevis()" />
+    </ng-template>
+</p-dialog>
 
         <p-confirmdialog [style]="{ width: '450px' }" />
     `,
@@ -404,7 +410,7 @@ export class Intervention implements OnInit {
         }
     }
 
-    saveIntervention() { 
+    saveIntervention() {
         this.reparationService.setVehicule(this.newRep).subscribe(
             (response) => {
                 this.messageService.add({
@@ -423,7 +429,7 @@ export class Intervention implements OnInit {
                 });
             }
         )
-        console.log("newRep",this.newRep)
+        console.log("newRep", this.newRep)
         this.loadReparations()
         this.newInterventionDialog = false;
     }
