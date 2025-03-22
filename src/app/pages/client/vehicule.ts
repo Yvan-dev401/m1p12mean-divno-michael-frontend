@@ -19,8 +19,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ProgressBarModule } from 'primeng/progressbar';
-import { Product, ProductService } from '../service/product.service';
-import { VehiculeService } from '../../services/vehicule/vehicule.service';
+import { Vehicule,VehiculeService } from '../../services/vehicule/vehicule.service';
 
 interface Column {
     field: string;
@@ -62,32 +61,39 @@ interface ExportColumn {
         <p-toolbar styleClass="mb-6">
             <ng-template #start>
                 <p-button label="Nouvelle véhicule" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
-                <!-- <p-button severity="secondary" label="Supprimer" icon="pi pi-trash" outlined (onClick)="deleteSelectedProducts()" [disabled]="!selectedProducts || !selectedProducts.length" /> -->
+                <p-button severity="secondary" label="Supprimer" icon="pi pi-trash" outlined (onClick)="deleteSelectedVehicule()" [disabled]="!selectedVehicule || !selectedVehicule.length" />
             </ng-template>
         </p-toolbar>
 
-        <!-- [(selection)]="selectedProducts" -->
         <p-table
             #dt
             [value]="vehicules"
-            [rows]="10"
-            [columns]="cols"
+            [rows]="5"
+            [columns]="['marque','modele','annee','kilometrage','immatriculation']"
             [paginator]="true"
-            [globalFilterFields]="['marque','modele','annee','pl']"
+            [globalFilterFields]="['marque','modele','annee','kilometrage','immatriculation']"
             [tableStyle]="{ 'min-width': '75rem' }"
+            [(selection)]="selectedVehicule"
             [rowHover]="true"
-            dataKey="id"
-            currentPageReportTemplate="Affichage {first} de {last} à {totalRecords} intervention"
+            dataKey="_id"
+            currentPageReportTemplate="Affichage {first} de {last} à {totalRecords} vehicule"
             [showCurrentPageReport]="true"
-            [rowsPerPageOptions]="[10, 20, 30]"
+            [rowsPerPageOptions]="[5,10, 20, 30]"
         >
             <ng-template #caption>
                 <div class="flex items-center justify-between">
                     <h5 class="m-0">Liste véhicule</h5>
+                    <p-iconfield>
+                        <p-inputicon styleClass="pi pi-search" />
+                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher..." />
+                    </p-iconfield>
                 </div>
             </ng-template>
             <ng-template #header>
                 <tr>
+                <th style="width: 3rem">
+                        <p-tableHeaderCheckbox />
+                    </th>
                     <th pSortableColumn="marque" style="min-width:10rem">
                         Marque
                         <p-sortIcon field="marque" />
@@ -96,8 +102,18 @@ interface ExportColumn {
                         Modele
                         <p-sortIcon field="modele" />
                     </th>
-                    <th pSortableColumn="annee" style="min-width: 12rem">Annee <p-sortIcon field="modele" /></th>
-                    <th pSortableColumn="pl" style="min-width: 12rem">Plaque Immatriculation <p-sortIcon field="modele" /></th>
+                    <th pSortableColumn="annee" style="min-width: 12rem">
+                        Annee 
+                        <p-sortIcon field="modele" />
+                    </th>
+                    <th pSortableColumn="kilometrage" style="min-width: 12rem">
+                        Kilometrage
+                         <p-sortIcon field="kilometrage" />
+                    </th>
+                    <th pSortableColumn="immatriculation" style="min-width: 12rem">
+                        Immatriculation
+                         <p-sortIcon field="immatriculation" />
+                    </th>
                     <th style="min-width: 12rem"></th>
                 </tr>
             </ng-template>
@@ -105,15 +121,18 @@ interface ExportColumn {
             <!-- Contenu table -->
             <ng-template #body let-vehicule>
                 <tr>
+                <td style="width: 3rem">
+                        <p-tableCheckbox [value]="vehicule" />
+                    </td>
                     <td>{{ vehicule.marque }}</td>
                     <td>{{ vehicule.modele }}</td>
                     <td>{{ vehicule.annee }}</td>
-                    <td>{{ vehicule.plaqueImmatriculation }}</td>
-                    <!-- <td>
-                        <p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus))" />
-                    </td> -->
+                    <td>{{ vehicule.kilometrage }}</td>
                     <td>
-                        <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="detailVehicule(product)" />
+                        <p-tag [value]="vehicule.plaqueImmatriculation" [severity]="'success'" />
+                    </td>
+                    <td>
+                        <!-- <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="detailVehicule(product)" /> -->
                         <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="updateVehicule()" />
                     </td>
                 </tr>
@@ -125,18 +144,34 @@ interface ExportColumn {
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
-                        <label for="inventoryStatus" class="block font-bold mb-3">Marque de la voiture</label>
-                        <input type="text" pInputText id="name" [(ngModel)]="product.name" required autofocus fluid />
+                        <label for="inventoryStatus" class="block font-bold mb-3">Marque</label>
+                        <input type="text" pInputText id="name" [(ngModel)]="vehicule.marque" required autofocus fluid />
                     </div>
                     <div>
+                        <label for="inventoryStatus" class="block font-bold mb-3">Modele</label>
+                        <input type="text" pInputText id="name" [(ngModel)]="vehicule.modele" required autofocus fluid />
+                    </div>
+                    <div>
+                        <label for="inventoryStatus" class="block font-bold mb-3">Annee de sortie</label>
+                        <input type="text" pInputText id="name" [(ngModel)]="vehicule.annee" required autofocus fluid />
+                    </div>
+                    <div>
+                        <label for="inventoryStatus" class="block font-bold mb-3">Kilometrage</label>
+                        <input type="text" pInputText id="name" [(ngModel)]="vehicule.kilometrage" required autofocus fluid />
+                    </div>
+                    <div>
+                        <label for="inventoryStatus" class="block font-bold mb-3">Plaque d'immatriculation</label>
+                        <input type="text" pInputText id="name" [(ngModel)]="vehicule.plaqueImmatriculation" required autofocus fluid />
+                    </div>
+                    <!-- <div>
                         <label for="description" class="block font-bold mb-3">Description de la voiture</label>
-                        <textarea id="description" pTextarea [(ngModel)]="product.description" required rows="3" cols="20" fluid></textarea>
+                        <textarea id="description" pTextarea [(ngModel)]="vehicule.description" required rows="3" cols="20" fluid></textarea>
                     </div>
                     <div>
                         <label for="name" class="block font-bold mb-3">Kilométrage</label>
                         <input type="number" pInputText id="name" required autofocus fluid />
                         <small class="text-red-500" *ngIf="submitted && !product.name">Le kilométrage est requis.</small>
-                    </div>
+                    </div> -->
                 </div>
             </ng-template>
 
@@ -146,7 +181,7 @@ interface ExportColumn {
             </ng-template>
         </p-dialog>
 
-        <p-dialog [(visible)]="detailDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
+        <!-- <p-dialog [(visible)]="detailDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
@@ -169,11 +204,11 @@ interface ExportColumn {
 
             <ng-template #footer>
                 <p-button label="Fermer" icon="pi pi-times" text (click)="hideDialog()" />
-                <!-- <p-button label="Accepter" icon="pi pi-check" (click)="detailVehicule()" /> -->
+                <p-button label="Accepter" icon="pi pi-check" (click)="detailVehicule()" />
             </ng-template>
-        </p-dialog>
+        </p-dialog> -->
 
-        <p-dialog [(visible)]="updateDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
+        <!-- <p-dialog [(visible)]="updateDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
@@ -198,26 +233,24 @@ interface ExportColumn {
                 <p-button label="Fermer" icon="pi pi-times" text (click)="hideDialog()" />
                 <p-button label="Accepter" icon="pi pi-check" (click)="updateVehicule()" />
             </ng-template>
-        </p-dialog>
+        </p-dialog> -->
 
         <p-confirmdialog [style]="{ width: '450px' }" />
     `,
-    providers: [MessageService, ProductService, ConfirmationService]
+    providers: [MessageService, VehiculeService, ConfirmationService]
 })
-export class Vehicule implements OnInit {
+export class ListeVehicule implements OnInit {
     newVehicule: boolean = false;
     detailDialog: boolean = false;
     updateDialog: boolean = false;
 
-    products = signal<Product[]>([]);
+    // products = signal<Product[]>([]);
 
     vehicules: Vehicule[] = [];
 
-    // vehicule! : Vehicule
+    vehicule!: Vehicule;
 
-    product!: Product;
-
-    // selectedProducts!: Product[] | null;
+    selectedVehicule!: Vehicule[] | null;
 
     submitted: boolean = false;
 
@@ -227,14 +260,13 @@ export class Vehicule implements OnInit {
 
     exportColumns!: ExportColumn[];
 
-    cols!: Column[];
+    // cols!: Column[];
 
     constructor(
-        private vehiculeService: VehiculeService
-        // private productService: ProductService,
-        // private messageService: MessageService,
-        // private confirmationService: ConfirmationService
-    ) {}
+        private vehiculeService: VehiculeService,
+        private messageService: MessageService,
+        private confirmationService: ConfirmationService
+    ) { }
 
     ngOnInit() {
         this.loadVehicules()
@@ -243,7 +275,7 @@ export class Vehicule implements OnInit {
     loadVehicules() {
         this.vehiculeService.getVehicule().subscribe((data) => {
             this.vehicules = data;
-            console.log('Données de réparation:', this.vehicules);
+            console.log('Données de vehicules:', this.vehicules);
         });
     }
 
@@ -279,38 +311,40 @@ export class Vehicule implements OnInit {
     }
 
     openNew() {
-        this.product = {};
+        this.vehicule = {};
         this.submitted = false;
         this.newVehicule = true;
     }
 
-    detailVehicule(product: Product) {
-        this.product = { ...product };
-        this.detailDialog = true;
-    }
+    // detailVehicule(product: Product) {
+    //     this.product = { ...product };
+    //     this.detailDialog = true;
+    // }
 
-    updateDialogOpen() {
-        this.updateDialog = true;
-    }
+    // updateDialogOpen() {
+    //     this.updateDialog = true;
+    // }
 
     // Suppression intervention sélectionné
-    // deleteSelectedProducts() {
-    //     this.confirmationService.confirm({
-    //         message: 'Are you sure you want to delete the selected products?',
-    //         header: 'Confirm',
-    //         icon: 'pi pi-exclamation-triangle',
-    //         accept: () => {
-    //             this.products.set(this.products().filter((val) => !this.selectedProducts?.includes(val)));
-    //             this.selectedProducts = null;
-    //             this.messageService.add({
-    //                 severity: 'success',
-    //                 summary: 'Successful',
-    //                 detail: 'Products Deleted',
-    //                 life: 3000
-    //             });
-    //         }
-    //     });
-    // }
+    deleteSelectedVehicule() {
+        this.confirmationService.confirm({
+            message: 'Are you sure you want to delete the selected products?',
+            header: 'Confirm',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => {
+
+                // this.products.set(this.products().filter((val) => !this.selectedProducts?.includes(val)));
+                console.log(this.selectedVehicule)
+                this.selectedVehicule = null
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Successful',
+                    detail: 'Products Deleted',
+                    life: 3000
+                });
+            }
+        });
+    }
 
     hideDialog() {
         this.newVehicule = false;
@@ -374,7 +408,7 @@ export class Vehicule implements OnInit {
         }
     }
 
-    saveVehicule() {}
+    saveVehicule() { }
 
-    updateVehicule() {}
+    updateVehicule() { }
 }

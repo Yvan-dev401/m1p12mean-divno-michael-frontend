@@ -78,7 +78,7 @@ export class AppMenuitem {
 
     @Input() parentKey!: string;
 
-    active = false;
+    active = true;
 
     menuSourceSubscription: Subscription;
 

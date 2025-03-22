@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { Calendar } from './client/calendar';
 import { History } from './client/history';
-import { Vehicule } from './client/vehicule';
+// import { Vehicule } from './client/vehicule';
 import { Intervention } from './client/intervention';
 import { Dashboard as ManagerDashboard } from './manager/dashboard';
 import { Dashboard as MechanicsDashboard } from './mechanics/dashboard';

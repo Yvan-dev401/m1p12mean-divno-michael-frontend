@@ -1,10 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,700;1,400&family=Barlow:ital,wght@0,400;0,700;1,400&display=swap');
+
+
 html {
     height: 100%;
     font-size: 14px;
 }
 
 body {
-    font-family: 'Lato', sans-serif;
+    // Lato
+    font-family: 'Public Sans', sans-serif;
     color: var(--text-color);
     background-color: var(--surface-ground);
     margin: 0;

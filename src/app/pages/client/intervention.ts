@@ -19,7 +19,9 @@ import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ProgressBarModule } from 'primeng/progressbar';
-import { Product, ProductService } from '../service/product.service';
+import { ReparationClService, ReparationCl } from '../../services/reparation/reparation.service';
+import { DevisService } from '../../services/devis/devis.service';
+import { response } from 'express';
 
 interface Column {
     field: string;
@@ -61,21 +63,21 @@ interface ExportColumn {
         <p-toolbar styleClass="mb-6">
             <ng-template #start>
                 <p-button label="Nouveau intervention" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
-                <p-button severity="secondary" label="Supprimer" icon="pi pi-trash" outlined (onClick)="deleteSelectedProducts()" [disabled]="!selectedProducts || !selectedProducts.length" />
+                <p-button severity="secondary" label="Supprimer" icon="pi pi-trash" outlined (onClick)="deleteselectedReparation()" [disabled]="!selectedReparation || !selectedReparation.length" />
             </ng-template>
         </p-toolbar>
 
         <p-table
             #dt
-            [value]="products()"
+            [value]="reparations"
             [rows]="10"
             [columns]="cols"
             [paginator]="true"
-            [globalFilterFields]="['name', 'country.name', 'representative.name', 'status']"
+            [globalFilterFields]="['date', 'country.name', 'representative.name', 'status']"
             [tableStyle]="{ 'min-width': '75rem' }"
-            [(selection)]="selectedProducts"
+            [(selection)]="selectedReparation"
             [rowHover]="true"
-            dataKey="id"
+            dataKey="_id"
             currentPageReportTemplate="Affichage {first} de {last} à {totalRecords} intervention"
             [showCurrentPageReport]="true"
             [rowsPerPageOptions]="[10, 20, 30]"
@@ -100,7 +102,7 @@ interface ExportColumn {
                         <p-sortIcon field="name" />
                     </th>
                     <th pSortableColumn="category" style="min-width:10rem">
-                        Type
+                        Description
                         <p-sortIcon field="category" />
                     </th>
                     <th pSortableColumn="rating" style="min-width: 12rem">
@@ -116,46 +118,46 @@ interface ExportColumn {
             </ng-template>
 
             <!-- Contenu table -->
-            <ng-template #body let-product>
+            <ng-template #body let-reparation>
                 <tr>
                     <td style="width: 3rem">
-                        <p-tableCheckbox [value]="product" />
+                        <p-tableCheckbox [value]="reparation" />
                     </td>
-                    <!-- <td style="min-width: 12rem">{{ product.code }}</td> -->
-                    <td style="min-width: 16rem">{{ product.name }}</td>
-                    <!-- <td>{{ product.price | currency: 'USD' }}</td> -->
-                    <td>{{ product.category }}</td>
+                    <!-- <td style="min-width: 12rem">{{ reparation.code }}</td> -->
+                    <td style="min-width: 16rem">{{ reparation.dateDebut }}</td>
+                    <!-- <td>{{ reparation.price | currency: 'USD' }}</td> -->
+                    <td>{{ reparation.descriptionProbleme }}</td>
                     <td>
-                        <p-progressBar [value]="product.rating * 20"></p-progressBar>
-                    </td>
-                    <td>
-                        <p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus))" />
+                        <p-progressBar [value]="0 * 20"></p-progressBar>
                     </td>
                     <td>
-                        <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="detailIntervention(product)" />
+                        <p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat))" />
+                    </td>
+                    <td>
+                        <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="detailIntervention(reparation,reparation._id)" />
                     </td>
                 </tr>
             </ng-template>
         </p-table>
 
         <!-- Insertion intervention -->
-        <p-dialog [(visible)]="newInterventionDialog" [style]="{ width: '450px' }" header="Nouveau intervention" [modal]="true">
+         <p-dialog [(visible)]="newInterventionDialog" [style]="{ width: '450px' }" header="Nouveau intervention" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
-                        <label for="inventoryStatus" class="block font-bold mb-3">Type d'intervention</label>
-                        <p-select [(ngModel)]="product.inventoryStatus" inputId="inventoryStatus" [options]="statuses" optionLabel="label" optionValue="label" placeholder="Select a Status" fluid />
+                        <label for="inventoryStatus" class="block font-bold mb-3">Vehicule</label>
+                        <p-select [options]="vehiListe" [(ngModel)]="newRep.vehiculeId" optionLabel="label" optionValue="value" placeholder="Select vehicule" fluid />
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Description</label>
-                        <textarea id="description" pTextarea [(ngModel)]="product.description" required rows="3" cols="20" fluid></textarea>
+                        <textarea id="description" pTextarea [(ngModel)]="newRep.descriptionProbleme" required rows="3" cols="20" fluid></textarea>
                     </div>
                     <div>
                         <label for="name" class="block font-bold mb-3">Date d'intervention</label>
-                        <input type="datetime-local" pInputText id="name" [(ngModel)]="product.name" required autofocus fluid />
-                        <small class="text-red-500" *ngIf="submitted && !product.name">La date est requis.</small>
+                        <input type="datetime-local" pInputText id="name" [(ngModel)]="newRep.dateDebut" required autofocus fluid />
+                        <small class="text-red-500" *ngIf="submitted">La date est requis.</small>
                     </div>
-                    <div>
+                    <!-- <div>
                         <span class="block font-bold mb-4">Mécanicien</span>
                         <div class="grid grid-cols-12 gap-4">
                             <div class="flex items-center gap-2 col-span-6">
@@ -167,7 +169,7 @@ interface ExportColumn {
                                 <label for="category2">Rabe</label>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </ng-template>
 
@@ -177,112 +179,138 @@ interface ExportColumn {
             </ng-template>
         </p-dialog>
 
-        <p-dialog [(visible)]="interventionDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
+        <p-dialog [(visible)]="interventionDialog" [style]="{ width: '450px' }" header="Intervention" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
-                        <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
+                        <label for="description" class="block font-bold mb-3"><p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat || ''))" /></label>
+                    </div>
+                    <div>
+                    <label for="description" class="block font-bold mb-3">Vehicule</label>
+                        Mazda - BT50
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Description</label>
-                        Marque et modèle, Année de mise en circulation, Kilométrage actuel
+                            <ul>Probleme : Problème de caméra de recul</ul>
+                            <ul>Diagnostique : Verifier le camera de recul, ou changer s'il le faut</ul>
+              
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Détails</label>
-                        Marque et modèle, Année de mise en circulation, Kilométrage actuel
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Devis</label>
-                        Total : 0.00 €
+                        Total :{{ total}} €
                     </div>
                 </div>
             </ng-template>
 
-            <ng-template #footer>
+            <ng-template #footer> 
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
                 <p-button label="Accepter" icon="pi pi-check" (click)="acceptDevis()" />
             </ng-template>
-        </p-dialog>
+        </p-dialog> 
 
         <p-confirmdialog [style]="{ width: '450px' }" />
     `,
-    providers: [MessageService, ProductService, ConfirmationService]
+    providers: [MessageService, ReparationClService, ConfirmationService]
 })
 export class Intervention implements OnInit {
     newInterventionDialog: boolean = false;
     interventionDialog: boolean = false;
 
-    products = signal<Product[]>([]);
+    newRep = {
+        vehiculeId: '',
+        mecanicienId: '',
+        descriptionProbleme: '',
+        etat: 'en attente',
+        dateDebut: '',
+        dateFin: '',
+        notesTechniques: '',
+        coutFinal: ''
+    }
 
-    product!: Product;
+    reparations: ReparationCl[] = []
 
-    selectedProducts!: Product[] | null;
+    total: any = {}
+
+    details: any = {}
+
+    reparation!: ReparationCl
+
+    selectedReparation!: ReparationCl[] | null;
 
     submitted: boolean = false;
 
-    statuses!: any[];
+    vehiListe!: any[];
 
     @ViewChild('dt') dt!: Table;
 
-    exportColumns!: ExportColumn[];
+    // exportColumns!: ExportColumn[];
 
     cols!: Column[];
 
     constructor(
-        private productService: ProductService,
+        private reparationService: ReparationClService,
+        private devisService: DevisService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
-    ) {}
+
+    ) { }
 
     ngOnInit() {
-        this.loadDemoData();
+        this.loadReparations()
+
+        this.vehiListe = [
+            { label: 'Mazda - BT50', value: '67d0002e360d5465cfade482' },
+            { label: 'Audi - RS6', value: '67d009fa8e4dcccf0023d4e6' }
+        ];
     }
 
-    loadDemoData() {
-        this.productService.getProducts().then((data) => {
-            this.products.set(data);
+    loadReparations() {
+        this.reparationService.getReparations().subscribe((data) => {
+            this.reparations = data;
+            console.log('Données de réparation:', this.reparations);
         });
-
-        this.statuses = [
-            { label: 'Réparation', value: 'reparation' },
-            { label: 'Révision', value: 'revision' },
-            { label: 'Diagnostic', value: 'diagnostic' }
-        ];
-
-        this.cols = [
-            { field: 'code', header: 'Code', customExportHeader: 'Product Code' },
-            { field: 'name', header: 'Name' },
-            { field: 'price', header: 'Price' },
-            { field: 'category', header: 'Category' }
-        ];
-
-        this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
     }
+
+    // loadDevis(id:string){
+    //     this.devisService.getDevis(id).subscribe((data) => {
+    //         this.devis = data
+    //         console.log(this.devis)
+    //     })
+    // }
 
     onGlobalFilter(table: Table, event: Event) {
         table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
     }
 
     openNew() {
-        this.product = {};
+        this.reparation = {};
         this.submitted = false;
         this.newInterventionDialog = true;
     }
 
-    detailIntervention(product: Product) {
-        this.product = { ...product };
+    detailIntervention(rep: ReparationCl, id: string) {
+        console.log("id", id)
+        this.devisService.getDevis(id).subscribe((data) => {
+            this.details = data.details
+            this.total = data.total
+            console.log("devis", this.details)
+        })
+        this.reparation = { ...rep };
         this.interventionDialog = true;
     }
 
     // Suppression intervention sélectionné
-    deleteSelectedProducts() {
+    deleteselectedReparation() {
         this.confirmationService.confirm({
             message: 'Are you sure you want to delete the selected products?',
             header: 'Confirm',
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
-                this.products.set(this.products().filter((val) => !this.selectedProducts?.includes(val)));
-                this.selectedProducts = null;
+                // this.products.set(this.products().filter((val) => !this.selectedReparation?.includes(val)));
+                // this.selectedReparation = null;
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Successful',
@@ -299,26 +327,48 @@ export class Intervention implements OnInit {
         this.submitted = false;
     }
 
-    findIndexById(id: string): number {
-        let index = -1;
-        for (let i = 0; i < this.products().length; i++) {
-            if (this.products()[i].id === id) {
-                index = i;
-                break;
-            }
-        }
+    // findIndexById(id: string): number {
+    //     let index = -1;
+    //     for (let i = 0; i < this.products().length; i++) {
+    //         if (this.products()[i].id === id) {
+    //             index = i;
+    //             break;
+    //         }
+    //     }
 
-        return index;
-    }
+    //     return index;
+    // }
 
-    createId(): string {
-        let id = '';
-        var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        for (var i = 0; i < 5; i++) {
-            id += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return id;
-    }
+    // createId(): string {
+    //     let id = '';
+    //     var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    //     for (var i = 0; i < 5; i++) {
+    //         id += chars.charAt(Math.floor(Math.random() * chars.length));
+    //     }
+    //     return id;
+    // }
+
+
+    // loadDemoData() {
+    //     this.productService.getProducts().then((data) => {
+    //         this.products.set(data);
+    //     });
+
+    //     this.statuses = [
+    //         { label: 'Réparation', value: 'reparation' },
+    //         { label: 'Révision', value: 'revision' },
+    //         { label: 'Diagnostic', value: 'diagnostic' }
+    //     ];
+
+    //     this.cols = [
+    //         { field: 'code', header: 'Code', customExportHeader: 'Product Code' },
+    //         { field: 'name', header: 'Name' },
+    //         { field: 'price', header: 'Price' },
+    //         { field: 'category', header: 'Category' }
+    //     ];
+
+    //     this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
+    // }
 
     getSeverity(status: string) {
         switch (status) {
@@ -354,7 +404,29 @@ export class Intervention implements OnInit {
         }
     }
 
-    saveIntervention() {}
+    saveIntervention() { 
+        this.reparationService.setVehicule(this.newRep).subscribe(
+            (response) => {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Successful',
+                    detail: 'Intervention Added',
+                    life: 3000
+                });
+            },
+            (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'erreur',
+                    detail: '',
+                    life: 3000
+                });
+            }
+        )
+        console.log("newRep",this.newRep)
+        this.loadReparations()
+        this.newInterventionDialog = false;
+    }
 
-    acceptDevis() {}
+    acceptDevis() { }
 }

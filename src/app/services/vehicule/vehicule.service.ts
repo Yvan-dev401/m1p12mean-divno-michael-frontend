@@ -31,15 +31,15 @@ export class VehiculeService {
       return this.http.delete(`${this.apiUrl}/${id}`)
     }
 
-
 }
 
 export interface Vehicule {
-  _id: string;
-  clientId: string;
-  marque: string;
-  modele: string;
-  annee: string;
-  plaqueImmatriculation: string;
+  _id?: string;
+  clientId?: string;
+  marque?: string;
+  modele?: string;
+  annee?: string;
+  plaqueImmatriculation?: string;
+  kilometrage?: string
 }
 
