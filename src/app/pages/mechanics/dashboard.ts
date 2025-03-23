@@ -20,9 +20,10 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { CheckboxModule } from 'primeng/checkbox';
-import { Product, ProductService } from '../service/product.service';
-import { CountryService } from '../service/country.service';
+// import { Product, ProductService } from '../service/product.service';
 import { ReparationService, Reparation } from '../service/reparation.service';
+import { StockService, Stock } from '../service/stock.service';
+import { DevisService, Devis } from '../service/devis.service';
 import { AutoComplete } from 'primeng/autocomplete';
 import { HttpClientModule } from '@angular/common/http';
 
@@ -79,7 +80,7 @@ interface AutoCompleteCompleteEvent {
             [paginator]="true"
             [globalFilterFields]="['name', 'country.name', 'representative.name', 'status']"
             [tableStyle]="{ 'min-width': '75rem' }"
-            [(selection)]="selectedProducts"
+            [(selection)]="selectedReparations"
             [rowHover]="true"
             dataKey="id"
             currentPageReportTemplate="Affichage {first} de {last} à {totalRecords} intervention"
@@ -154,11 +155,11 @@ interface AutoCompleteCompleteEvent {
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
-                        <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
+                        <label for="description" class="block font-bold mb-3"><p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat || ''))" /></label>
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Description</label>
-                        Marque et modèle, Année de mise en circulation, Kilométrage actuel
+                        {{ reparation.descriptionProbleme }}
                     </div>
                 </div>
             </ng-template>
@@ -173,20 +174,24 @@ interface AutoCompleteCompleteEvent {
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
-                        <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
-                    </div>
-                    <div>
-                        <label for="name" class="block font-bold mb-3">Date fin d'intervention</label>
-                        <input type="datetime-local" pInputText id="name" [(ngModel)]="product.name" required autofocus fluid />
-                        <small class="text-red-500" *ngIf="submitted && !product.name">La date est requis.</small>
+                        <label for="description" class="block font-bold mb-3">
+                            <p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat || ''))" />
+                        </label>
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Pièces nécessaires</label>
-                        <!-- <p-autocomplete [(ngModel)]="selectedCountry" [suggestions]="filteredCountries" (completeMethod)="filterCountry($event)" optionLabel="name" /> -->
                     </div>
                     <div *ngFor="let item of items; let i = index">
                         <div style="display: flex; align-items: center;">
-                            <p-autocomplete [(ngModel)]="item.selectedCountry" [suggestions]="filteredCountries" (completeMethod)="filterCountry($event)" optionLabel="name" placeholder="Pièces" class="custom-autocomplete"></p-autocomplete>
+                            <p-autocomplete
+                                [(ngModel)]="item.selectedStock"
+                                [suggestions]="filteredStocks"
+                                (completeMethod)="filterStock($event)"
+                                optionLabel="nomPiece"
+                                placeholder="Pièces"
+                                class="custom-autocomplete"
+                                emptyMessage="Résultat non trouvé"
+                            ></p-autocomplete>
                             <span style="margin: 0 40px;">x</span>
                             <input type="number" pInputText [(ngModel)]="item.quantity" placeholder="Quantité" style="width: 100px;" />
                         </div>
@@ -205,13 +210,12 @@ interface AutoCompleteCompleteEvent {
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
-                        <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
+                        <label for="description" class="block font-bold mb-3"><p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat || ''))" /></label>
                     </div>
                     <div>
                         <label style="margin-bottom: 20px" for="description" class="block font-bold mb-3">Liste des tâches</label>
                         <div *ngFor="let task of tasks; let i = index" style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <!-- <input type="checkbox" [(ngModel)]="task.completed" style="margin-right: 10px;" /> -->
-                            <p-checkbox [style]="{ marginRight: '10px' }" inputId="size_normal" name="size" value="Normal" />
+                            <p-checkbox [(ngModel)]="task.completed" [style]="{ marginRight: '10px' }" inputId="task_{{ i }}" binary="true" (onChange)="updateTaskStatus(task)"></p-checkbox>
                             <span>{{ task.name }}</span>
                         </div>
                     </div>
@@ -220,13 +224,13 @@ interface AutoCompleteCompleteEvent {
 
             <ng-template #footer>
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Accepter" icon="pi pi-check" (click)="hideDialog()" />
+                <p-button label="Terminer" icon="pi pi-check" (click)="hideDialog()" />
             </ng-template>
         </p-dialog>
 
         <p-confirmdialog [style]="{ width: '450px' }" />
     `,
-    providers: [MessageService, ProductService, ConfirmationService, CountryService],
+    providers: [MessageService, ConfirmationService, StockService, ReparationService, DevisService],
     styles: [
         `
             ::ng-deep .custom-autocomplete .p-autocomplete-input {
@@ -247,20 +251,22 @@ export class Dashboard implements OnInit {
     pieceDialog: boolean = false;
 
     // Service
-    countries: any[] | undefined;
-    selectedCountry: any;
-    product!: Product;
+    stocks: any[] | undefined;
+    selectedReparations: any[] = [];
+    selectedStock: any;
+    selecedDevis: any;
 
     // Variables
     reparations: Reparation[] = [];
     reparation!: Reparation;
 
     quantity: number = 0;
-    tasks: { name: string; completed: boolean }[] = [];
-    items: { selectedCountry: any; quantity: number }[] = [];
-    filteredCountries: any[] = [];
-    products = signal<Product[]>([]);
-    selectedProducts!: Product[] | null;
+    // tasks: { name: string; completed: boolean }[] = [];
+    tasks: { _id: string; name: string; completed: boolean; quantite: number }[] = [];
+    // items: { selectedCountry: any; quantity: number }[] = [];
+    items: { selectedStock: any; quantity: number }[] = [];
+
+    filteredStocks: any[] = [];
 
     submitted: boolean = false;
 
@@ -273,20 +279,19 @@ export class Dashboard implements OnInit {
     cols!: Column[];
 
     constructor(
-        private productService: ProductService,
-        private messageService: MessageService,
-        private confirmationService: ConfirmationService,
-        private countryService: CountryService,
-        private reparationService: ReparationService
+        private stockService: StockService,
+        private reparationService: ReparationService,
+        private devisService: DevisService
     ) {}
 
     ngOnInit() {
-        this.loadDemoData();
-        this.countryService.getCountries().then((countries) => {
-            this.countries = countries;
+        // this.loadDemoData();
+        this.stockService.getStock().subscribe((stocks) => {
+            this.stocks = stocks;
         });
-        this.items.push({ selectedCountry: null, quantity: 0 });
-        this.loadTasks();
+        // this.items.push({ selectedCountry: null, quantity: 0 });
+        this.items.push({ selectedStock: null, quantity: 0 });
+        // this.loadTasks();
         this.loadReparations();
     }
 
@@ -297,67 +302,92 @@ export class Dashboard implements OnInit {
         });
     }
 
-    loadTasks() {
+    /* loadTasks() {
         this.tasks = [
-            { name: 'Vérification des freins', completed: false },
+            { name: 'Vérification des freins', completed: true },
             { name: "Changement d'huile", completed: false },
-            { name: 'Inspection des pneus', completed: false },
+            { name: 'Inspection des pneus', completed: true },
             { name: 'Test de batterie', completed: false }
         ];
+    } */
+    loadTasks() {
+        this.devisService.getDevis().subscribe(
+            (devis) => {
+                const selectedDevis = devis.filter((d) => {
+                    const reparationIdDevis = d.reparationId.toString().trim();
+                    const reparationIdLocal = this.reparation._id.toString().trim();
+                    return reparationIdDevis === reparationIdLocal;
+                });
+
+                if (selectedDevis.length > 0) {
+                    this.tasks = selectedDevis.map((devis) => ({
+                        _id: devis._id,
+                        name: devis.stockId,
+                        completed: devis.etat,
+                        quantite: devis.quantite
+                    }));
+                } else {
+                    console.log('Aucun devis correspondant trouvé');
+                    this.tasks = [];
+                }
+            },
+            (error) => {
+                console.error('Erreur lors de la récupération des devis :', error);
+            }
+        );
+    }
+
+    updateTaskStatus(task: { _id: string; name: string; completed: boolean; quantite: number }) {
+        const _id = task._id;
+        const updateData = {
+            stockId: task.name,
+            etat: task.completed,
+            reparationId: this.reparation._id,
+            quantite: task.quantite
+        };
+
+        this.devisService.updateDevis(_id, updateData).subscribe(
+            (response) => {
+                console.log('Mise à jour réussie :', response);
+            },
+            (error) => {
+                console.error('Erreur lors de la mise à jour :', error);
+            }
+        );
     }
 
     duplicateItem() {
-        const newItem = { selectedCountry: null, quantity: 0 };
+        const newItem = { selectedStock: null, quantity: 0 };
         this.items.push(newItem);
     }
 
-    filterCountry(event: AutoCompleteCompleteEvent) {
+    filterStock(event: AutoCompleteCompleteEvent) {
         let filtered: any[] = [];
         let query = event.query;
 
-        for (let i = 0; i < (this.countries as any[]).length; i++) {
-            let country = (this.countries as any[])[i];
-            if (country.name.toLowerCase().indexOf(query.toLowerCase()) == 0) {
-                filtered.push(country);
+        for (let i = 0; i < (this.stocks as any[]).length; i++) {
+            let stock = (this.stocks as any[])[i];
+            if (stock.nomPiece.toLowerCase().indexOf(query.toLowerCase()) === 0) {
+                filtered.push(stock);
             }
         }
 
-        this.filteredCountries = filtered;
+        this.filteredStocks = filtered;
     }
 
-    loadDemoData() {
-        this.productService.getProducts().then((data) => {
-            this.products.set(data);
-        });
-
-        this.statuses = [
-            { label: 'Réparation', value: 'reparation' },
-            { label: 'Révision', value: 'revision' },
-            { label: 'Diagnostic', value: 'diagnostic' }
-        ];
-
-        this.cols = [
-            { field: 'code', header: 'Code', customExportHeader: 'Product Code' },
-            { field: 'name', header: 'Name' },
-            { field: 'price', header: 'Price' },
-            { field: 'category', header: 'Category' }
-        ];
-
-        this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
-    }
-
-    interventionOpen(product: Product) {
-        this.product = { ...product };
+    interventionOpen(reparation: Reparation) {
+        this.reparation = { ...reparation };
         this.interventionDialog = true;
     }
 
-    listPiece(product: Product) {
-        this.product = { ...product };
+    listPiece(reparation: Reparation) {
+        this.reparation = { ...reparation };
         this.pieceDialog = true;
     }
 
-    taskProduct(product: Product) {
-        this.product = { ...product };
+    taskProduct(reparation: Reparation) {
+        this.reparation = { ...reparation };
+        this.loadTasks(); // Charger les tâches avant d'ouvrir le dialogue
         this.taskDialog = true;
     }
 
@@ -402,7 +432,44 @@ export class Dashboard implements OnInit {
         }
     }
 
-    saveTask() {}
+    saveTask() {
+        console.log('Items à sauvegarder :', this.items);
+
+        const itemsToSave = this.items.map((item) => ({
+            stockId: item.selectedStock._id,
+            quantite: item.quantity,
+            reparationId: this.reparation._id, // Ajout de l'ID de la réparation
+            etat: false
+        }));
+
+        this.devisService.insert(itemsToSave).subscribe(
+            (response) => {
+                console.log('Réponse :', response);
+                // this.hideDialog();
+                window.location.reload();
+            },
+            (error) => {
+                console.error('Erreur :', error);
+            }
+        );
+    }
+
+    /* loadDemoData() {
+        this.statuses = [
+            { label: 'Réparation', value: 'reparation' },
+            { label: 'Révision', value: 'revision' },
+            { label: 'Diagnostic', value: 'diagnostic' }
+        ];
+
+        this.cols = [
+            { field: 'code', header: 'Code', customExportHeader: 'Product Code' },
+            { field: 'name', header: 'Name' },
+            { field: 'price', header: 'Price' },
+            { field: 'category', header: 'Category' }
+        ];
+
+        this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
+    } */
 
     /* onGlobalFilter(table: Table, event: Event) {
         table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
