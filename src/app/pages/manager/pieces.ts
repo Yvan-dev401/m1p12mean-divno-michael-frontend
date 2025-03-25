@@ -148,6 +148,10 @@ import { ToolbarModule } from 'primeng/toolbar';
                         <label for="description" class="block font-bold mb-3">Prix</label>
                         <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="5000 Ar" />
                     </div>
+                    <div>
+                        <label for="description" class="block font-bold mb-3">Main d'oeuvre</label>
+                        <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="5000 Ar" />
+                    </div>
                 </div>
             </ng-template>
 
