@@ -18,7 +18,7 @@ import { ToolbarModule } from 'primeng/toolbar';
     template: `
         <p-toolbar styleClass="mb-6">
             <ng-template #start>
-                <p-button label="Nouveau intervention" icon="pi pi-plus" severity="secondary" class="mr-2" />
+                <p-button label="Nouveau pièce" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="newPiece()" />
             </ng-template>
         </p-toolbar>
         <div class="flex flex-col">
@@ -130,26 +130,30 @@ import { ToolbarModule } from 'primeng/toolbar';
             </div>
         </div>
 
-        <p-dialog [(visible)]="orderDialog" [style]="{ width: '450px' }" header="Commande de pièce" [modal]="true">
+        <p-dialog [(visible)]="newPieceDialog" [style]="{ width: '450px' }" header="Insertion nouveau pièce" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <!-- <div>
                         <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
                     </div> -->
                     <div>
-                        <label for="description" class="block font-bold mb-3">Pièce</label>
-                        Marque et modèle, Année de mise en circulation, Kilométrage actuel
+                        <label for="description" class="block font-bold mb-3">Nom pièce</label>
+                        <input type="text" id="description" class="block w-full p-2 border rounded" placeholder="Ex: Bougie" />
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Quantité</label>
                         <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="Entrez un nombre" />
+                    </div>
+                    <div>
+                        <label for="description" class="block font-bold mb-3">Prix</label>
+                        <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="5000 Ar" />
                     </div>
                 </div>
             </ng-template>
 
             <ng-template #footer>
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Accepter" icon="pi pi-check" (click)="save()" />
+                <p-button label="Insérer" icon="pi pi-check" (click)="save()" />
             </ng-template>
         </p-dialog>
 
@@ -188,6 +192,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 export class Pieces {
     layout: 'list' | 'grid' = 'list';
     orderDialog: boolean = false;
+    newPieceDialog: boolean = false;
 
     options = ['list', 'grid'];
 
@@ -240,12 +245,17 @@ export class Pieces {
         this.orderDialog = true;
     }
 
+    newPiece() {
+        this.newPieceDialog = true;
+    }
+
     save() {
         this.orderDialog = false;
     }
 
     hideDialog() {
         this.orderDialog = false;
+        this.newPieceDialog = false;
     }
 
     getSeverity(product: Product) {
