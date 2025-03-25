@@ -64,8 +64,8 @@ import { MenuModule } from 'primeng/menu';
             </li>
         </ul>
 
-        <span class="block text-muted-color font-medium mb-4">Semaine</span>
-        <ul class="p-0 m-0 list-none"></ul>
+        <!-- <span class="block text-muted-color font-medium mb-4">Semaine</span>
+        <ul class="p-0 m-0 list-none"></ul> -->
     </div>`
 })
 export class NotificationsWidget {

@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { Product, ProductService } from '../../service/product.service';
+import { ReparationService, Reparation } from '../../service/reparation.service';
 
 @Component({
     standalone: true,
@@ -14,7 +15,7 @@ import { Product, ProductService } from '../../service/product.service';
     template: `<div class="card !mb-8">
         <!-- <div class="font-semibold text-xl mb-4">Recent Sales</div> -->
         <div class="font-semibold text-xl mb-4">Intervention en cours</div>
-        <p-table [value]="products" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+        <p-table [value]="reparations" [paginator]="true" [rows]="10" responsiveLayout="scroll">
             <ng-template #header>
                 <tr>
                     <th pSortableColumn="name">Date <p-sortIcon field="name"></p-sortIcon></th>
@@ -23,13 +24,13 @@ import { Product, ProductService } from '../../service/product.service';
                     <th>Action</th>
                 </tr>
             </ng-template>
-            <ng-template #body let-product>
+            <ng-template #body let-reparation>
                 <tr>
-                    <td style="width: 35%; min-width: 7rem;">{{ product.name }}</td>
-                    <td style="width: 35%; min-width: 8rem;">{{ product.price | currency: 'USD' }}</td>
-                    <td style="width: 35%; min-width: 8rem;">{{ product.price | currency: 'USD' }}</td>
+                    <td style="width: 35%; min-width: 7rem;">{{ reparation.dateDebut }}</td>
+                    <td style="width: 35%; min-width: 8rem;">{{ reparation.mecanicienId }}</td>
+                    <td style="width: 35%; min-width: 8rem;">{{ reparation.etat }}</td>
                     <td style="width: 15%;">
-                        <button pButton pRipple type="button" icon="pi pi-eye" class="p-button p-component p-button-text p-button-icon-only" (click)="editProduct(product)"></button>
+                        <button pButton pRipple type="button" icon="pi pi-eye" class="p-button p-component p-button-text p-button-icon-only" (click)="interventionOpen(reparation)"></button>
                     </td>
                 </tr>
             </ng-template>
@@ -42,22 +43,22 @@ import { Product, ProductService } from '../../service/product.service';
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Description</label>
-                        Marque et modèle, Année de mise en circulation, Kilométrage actuel
+                        {{ reparation.descriptionProbleme }}
                     </div>
-                    <div>
+                    <!-- <div>
                         <label for="description" class="block font-bold mb-3">Détails</label>
                         Marque et modèle, Année de mise en circulation, Kilométrage actuel
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Devis</label>
                         Total : 0.00 €
-                    </div>
+                    </div> -->
                 </div>
             </ng-template>
 
             <ng-template #footer>
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Accepter" icon="pi pi-check" (click)="hideDialog()" />
+                <!-- <p-button label="Accepter" icon="pi pi-check" (click)="hideDialog()" /> -->
             </ng-template>
         </p-dialog>
     </div>`,
@@ -66,17 +67,30 @@ import { Product, ProductService } from '../../service/product.service';
 export class RecentSalesWidget {
     productDialog: boolean = false;
     products!: Product[];
+    reparations: Reparation[] = [];
+    reparation!: Reparation;
+
     interventionDialog: boolean = false;
     submitted: boolean = false;
 
-    constructor(private productService: ProductService) {}
+    constructor(
+        private productService: ProductService,
+        private reparationService: ReparationService
+    ) {}
 
     ngOnInit() {
         this.productService.getProductsSmall().then((data) => (this.products = data));
+        this.loadReparations();
     }
 
-    editProduct(product: Product) {
-        // this.product = { ...product };
+    loadReparations() {
+        this.reparationService.getReparations().subscribe((data) => {
+            this.reparations = data;
+        });
+    }
+
+    interventionOpen(reparation: Reparation) {
+        this.reparation = { ...reparation };
         this.interventionDialog = true;
     }
 

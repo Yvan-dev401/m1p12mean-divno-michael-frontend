@@ -181,7 +181,7 @@ interface AutoCompleteCompleteEvent {
                     <div>
                         <label for="description" class="block font-bold mb-3">Pièces nécessaires</label>
                     </div>
-                    <div *ngFor="let item of items; let i = index">
+                    <div *ngFor="let item of items; let i = index" class="champTask">
                         <div style="display: flex; align-items: center;">
                             <p-autocomplete
                                 [(ngModel)]="item.selectedStock"
@@ -192,8 +192,9 @@ interface AutoCompleteCompleteEvent {
                                 class="custom-autocomplete"
                                 emptyMessage="Résultat non trouvé"
                             ></p-autocomplete>
-                            <span style="margin: 0 40px;">x</span>
+                            <span style="margin: 0 25px;">x</span>
                             <input type="number" pInputText [(ngModel)]="item.quantity" placeholder="Quantité" style="width: 100px;" />
+                            <p-button *ngIf="items.length > 1" icon="pi pi-trash" [rounded]="true" [text]="true" [raised]="true" severity="danger" (click)="removeItem(i)" [style]="{ marginLeft: '10px' }"></p-button>
                         </div>
                     </div>
                 </div>
@@ -216,7 +217,7 @@ interface AutoCompleteCompleteEvent {
                         <label style="margin-bottom: 20px" for="description" class="block font-bold mb-3">Liste des tâches</label>
                         <div *ngFor="let task of tasks; let i = index" style="display: flex; align-items: center; margin-bottom: 10px;">
                             <p-checkbox [(ngModel)]="task.completed" [style]="{ marginRight: '10px' }" inputId="task_{{ i }}" binary="true" (onChange)="updateTaskStatus(task)"></p-checkbox>
-                            <span>{{ task.name }}</span>
+                            <span>{{ task.name }} ({{ task.quantite }})</span>
                         </div>
                     </div>
                 </div>
@@ -262,7 +263,7 @@ export class Dashboard implements OnInit {
 
     quantity: number = 0;
     // tasks: { name: string; completed: boolean }[] = [];
-    tasks: { _id: string; name: string; completed: boolean; quantite: number }[] = [];
+    tasks: { _id: string; stockId: string; name: string; completed: boolean; quantite: number }[] = [];
     // items: { selectedCountry: any; quantity: number }[] = [];
     items: { selectedStock: any; quantity: number }[] = [];
 
@@ -298,18 +299,9 @@ export class Dashboard implements OnInit {
     loadReparations() {
         this.reparationService.getReparations().subscribe((data) => {
             this.reparations = data;
-            console.log('Données de réparation:', this.reparations);
         });
     }
 
-    /* loadTasks() {
-        this.tasks = [
-            { name: 'Vérification des freins', completed: true },
-            { name: "Changement d'huile", completed: false },
-            { name: 'Inspection des pneus', completed: true },
-            { name: 'Test de batterie', completed: false }
-        ];
-    } */
     loadTasks() {
         this.devisService.getDevis().subscribe(
             (devis) => {
@@ -322,7 +314,8 @@ export class Dashboard implements OnInit {
                 if (selectedDevis.length > 0) {
                     this.tasks = selectedDevis.map((devis) => ({
                         _id: devis._id,
-                        name: devis.stockId,
+                        stockId: devis.stockId,
+                        name: devis.nomPiece,
                         completed: devis.etat,
                         quantite: devis.quantite
                     }));
@@ -337,10 +330,11 @@ export class Dashboard implements OnInit {
         );
     }
 
-    updateTaskStatus(task: { _id: string; name: string; completed: boolean; quantite: number }) {
+    updateTaskStatus(task: { _id: string; stockId: string; name: string; completed: boolean; quantite: number }) {
         const _id = task._id;
         const updateData = {
-            stockId: task.name,
+            stockId: task.stockId,
+            nomPiece: task.name,
             etat: task.completed,
             reparationId: this.reparation._id,
             quantite: task.quantite
@@ -359,6 +353,10 @@ export class Dashboard implements OnInit {
     duplicateItem() {
         const newItem = { selectedStock: null, quantity: 0 };
         this.items.push(newItem);
+    }
+
+    removeItem(index: number) {
+        this.items.splice(index, 1);
     }
 
     filterStock(event: AutoCompleteCompleteEvent) {
@@ -437,6 +435,7 @@ export class Dashboard implements OnInit {
 
         const itemsToSave = this.items.map((item) => ({
             stockId: item.selectedStock._id,
+            nomPiece: item.selectedStock.nomPiece,
             quantite: item.quantity,
             reparationId: this.reparation._id, // Ajout de l'ID de la réparation
             etat: false
@@ -453,6 +452,21 @@ export class Dashboard implements OnInit {
             }
         );
     }
+
+    updateInterventionStatus(reparation: Reparation) {
+        const updateData = {
+            etat: 'Terminé'
+        };
+    }
+
+    /* loadTasks() {
+        this.tasks = [
+            { name: 'Vérification des freins', completed: true },
+            { name: "Changement d'huile", completed: false },
+            { name: 'Inspection des pneus', completed: true },
+            { name: 'Test de batterie', completed: false }
+        ];
+    } */
 
     /* loadDemoData() {
         this.statuses = [
