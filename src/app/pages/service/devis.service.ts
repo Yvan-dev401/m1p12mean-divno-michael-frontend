@@ -28,6 +28,7 @@ export interface Devis {
     reparationId: string;
     // items: { stockId: string; quantite: number; etat: boolean }[];
     stockId: string;
+    nomPiece: string;
     quantite: number;
     etat: boolean;
 }

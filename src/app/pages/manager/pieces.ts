@@ -8,13 +8,19 @@ import { PickListModule } from 'primeng/picklist';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { TagModule } from 'primeng/tag';
 import { Product, ProductService } from '../service/product.service';
+import { StockService, Stock } from '../service/stock.service';
 import { DialogModule } from 'primeng/dialog';
+import { ToolbarModule } from 'primeng/toolbar';
 
 @Component({
     selector: 'app-pieces',
-    standalone: true,
-    imports: [CommonModule, DataViewModule, FormsModule, SelectButtonModule, PickListModule, OrderListModule, TagModule, ButtonModule, DialogModule],
+    imports: [CommonModule, DataViewModule, FormsModule, SelectButtonModule, PickListModule, OrderListModule, TagModule, ButtonModule, DialogModule, ToolbarModule],
     template: `
+        <p-toolbar styleClass="mb-6">
+            <ng-template #start>
+                <p-button label="Nouveau pièce" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="newPiece()" />
+            </ng-template>
+        </p-toolbar>
         <div class="flex flex-col">
             <div class="card">
                 <div class="font-semibold text-xl">Inventaire</div>
@@ -32,19 +38,19 @@ import { DialogModule } from 'primeng/dialog';
                     <!-- Vue liste -->
                     <ng-template #list let-items>
                         <div class="flex flex-col">
-                            <div *ngFor="let item of items; let i = index">
+                            <div *ngFor="let stock of stocks; let i = index">
                                 <div class="flex flex-col sm:flex-row sm:items-center p-6 gap-4" [ngClass]="{ 'border-t border-surface': i !== 0 }">
-                                    <div class="md:w-40 relative">
+                                    <!-- <div class="md:w-40 relative">
                                         <img class="block xl:block mx-auto rounded w-full" src="https://primefaces.org/cdn/primevue/images/product/{{ item.image }}" [alt]="item.name" />
                                         <div class="absolute bg-black/70 rounded-border" [style]="{ left: '4px', top: '4px' }">
                                             <p-tag [value]="item.inventoryStatus" [severity]="getSeverity(item)"></p-tag>
                                         </div>
-                                    </div>
+                                    </div> -->
                                     <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
                                         <div class="flex flex-row md:flex-col justify-between items-start gap-2">
                                             <div>
-                                                <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.category }}</span>
-                                                <div class="text-lg font-medium mt-2">Quantité : 2</div>
+                                                <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ stock.nomPiece }}</span>
+                                                <div class="text-lg font-medium mt-2">Quantité : {{ stock.quantiteDisponible }}</div>
                                             </div>
                                             <!-- <div class="bg-surface-100 p-1" style="border-radius: 30px">
                                                 <div
@@ -62,7 +68,7 @@ import { DialogModule } from 'primeng/dialog';
                                             </div> -->
                                         </div>
                                         <div class="flex flex-col md:items-end gap-8">
-                                            <span class="text-xl font-semibold">Ar {{ item.price }}</span>
+                                            <span class="text-xl font-semibold">Ar {{ stock.prixUnitaire }}</span>
                                             <div class="flex flex-row-reverse md:flex-row gap-2">
                                                 <!-- <p-button icon="pi pi-heart" styleClass="h-full" [outlined]="true"></p-button> -->
                                                 <p-button icon="pi pi-shopping-cart" label="Commander" (click)="order()" styleClass="flex-auto md:flex-initial whitespace-nowrap"></p-button>
@@ -77,21 +83,21 @@ import { DialogModule } from 'primeng/dialog';
                     <!-- Vue gallerie -->
                     <ng-template #grid let-items>
                         <div class="grid grid-cols-12 gap-4">
-                            <div *ngFor="let item of items; let i = index" class="col-span-12 sm:col-span-6 lg:col-span-4 p-2">
+                            <div *ngFor="let stock of stocks; let i = index" class="col-span-12 sm:col-span-6 lg:col-span-4 p-2">
                                 <div class="p-6 border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 rounded flex flex-col">
-                                    <div class="bg-surface-50 flex justify-center rounded p-6">
+                                    <!-- <div class="bg-surface-50 flex justify-center rounded p-6">
                                         <div class="relative mx-auto">
                                             <img class="rounded w-full" src="https://primefaces.org/cdn/primevue/images/product/{{ item.image }}" [alt]="item.name" style="max-width: 300px" />
                                             <div class="absolute bg-black/70 rounded-border" [style]="{ left: '4px', top: '4px' }">
                                                 <p-tag [value]="item.inventoryStatus" [severity]="getSeverity(item)"></p-tag>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> -->
                                     <div class="pt-12">
                                         <div class="flex flex-row justify-between items-start gap-2">
                                             <div>
-                                                <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.category }}</span>
-                                                <div class="text-lg font-medium mt-1">Quantité : 2</div>
+                                                <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ stock.nomPiece }}</span>
+                                                <div class="text-lg font-medium mt-1">Quantité : {{ stock.quantiteDisponible }}</div>
                                             </div>
                                             <!-- <div class="bg-surface-100 p-1" style="border-radius: 30px">
                                                 <div
@@ -109,9 +115,9 @@ import { DialogModule } from 'primeng/dialog';
                                             </div> -->
                                         </div>
                                         <div class="flex flex-col gap-6 mt-6">
-                                            <span class="text-2xl font-semibold">Ar {{ item.price }}</span>
+                                            <span class="text-2xl font-semibold">Ar {{ stock.prixUnitaire }}</span>
                                             <div class="flex gap-2">
-                                                <p-button icon="pi pi-shopping-cart" label="Commander" (click)="order()" [disabled]="item.inventoryStatus === 'OUTOFSTOCK'" class="flex-auto whitespace-nowrap" styleClass="w-full"></p-button>
+                                                <!-- <p-button icon="pi pi-shopping-cart" label="Commander" (click)="order()" [disabled]="item.inventoryStatus === 'OUTOFSTOCK'" class="flex-auto whitespace-nowrap" styleClass="w-full"></p-button> -->
                                                 <!-- <p-button icon="pi pi-heart" styleClass="h-full" [outlined]="true"></p-button> -->
                                             </div>
                                         </div>
@@ -123,6 +129,37 @@ import { DialogModule } from 'primeng/dialog';
                 </p-dataview>
             </div>
         </div>
+
+        <p-dialog [(visible)]="newPieceDialog" [style]="{ width: '450px' }" header="Insertion nouveau pièce" [modal]="true">
+            <ng-template #content>
+                <div class="flex flex-col gap-6">
+                    <!-- <div>
+                        <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
+                    </div> -->
+                    <div>
+                        <label for="description" class="block font-bold mb-3">Nom pièce</label>
+                        <input type="text" id="description" class="block w-full p-2 border rounded" placeholder="Ex: Bougie" />
+                    </div>
+                    <div>
+                        <label for="description" class="block font-bold mb-3">Quantité</label>
+                        <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="Entrez un nombre" />
+                    </div>
+                    <div>
+                        <label for="description" class="block font-bold mb-3">Prix</label>
+                        <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="5000 Ar" />
+                    </div>
+                    <div>
+                        <label for="description" class="block font-bold mb-3">Main d'oeuvre</label>
+                        <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="5000 Ar" />
+                    </div>
+                </div>
+            </ng-template>
+
+            <ng-template #footer>
+                <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
+                <p-button label="Insérer" icon="pi pi-check" (click)="save()" />
+            </ng-template>
+        </p-dialog>
 
         <p-dialog [(visible)]="orderDialog" [style]="{ width: '450px' }" header="Commande de pièce" [modal]="true">
             <ng-template #content>
@@ -154,15 +191,17 @@ import { DialogModule } from 'primeng/dialog';
             }
         }
     `,
-    providers: [ProductService]
+    providers: [ProductService, StockService]
 })
 export class Pieces {
     layout: 'list' | 'grid' = 'list';
     orderDialog: boolean = false;
+    newPieceDialog: boolean = false;
 
     options = ['list', 'grid'];
 
     products: Product[] = [];
+    stocks: Stock[] = [];
 
     sourceCities: any[] = [];
 
@@ -170,10 +209,14 @@ export class Pieces {
 
     orderCities: any[] = [];
 
-    constructor(private productService: ProductService) {}
+    constructor(
+        private productService: ProductService,
+        private stockService: StockService
+    ) {}
 
     ngOnInit() {
         this.productService.getProductsSmall().then((data) => (this.products = data.slice(0, 6)));
+        this.listStocks();
 
         this.sourceCities = [
             { name: 'San Francisco', code: 'SF' },
@@ -198,8 +241,16 @@ export class Pieces {
         ];
     }
 
+    listStocks() {
+        this.stockService.getStock().subscribe((data) => (this.stocks = data));
+    }
+
     order() {
         this.orderDialog = true;
+    }
+
+    newPiece() {
+        this.newPieceDialog = true;
     }
 
     save() {
@@ -208,6 +259,7 @@ export class Pieces {
 
     hideDialog() {
         this.orderDialog = false;
+        this.newPieceDialog = false;
     }
 
     getSeverity(product: Product) {
