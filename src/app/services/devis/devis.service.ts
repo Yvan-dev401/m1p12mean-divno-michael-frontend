@@ -11,7 +11,7 @@ export class DevisService {
     constructor(private http: HttpClient) {}
 
     getDevis(id:string): Observable<any> {
-      return this.http.get(`${this.apiUrl}/devisByReparationID?repId=${id}`);
+      return this.http.get(`${this.apiUrl}/devisByReparationID?id=${id}`);
     }
 }
 

@@ -71,9 +71,9 @@ interface ExportColumn {
             #dt
             [value]="reparations"
             [rows]="10"
-            [columns]="cols"
+            [columns]="['date', 'voiture', 'description', 'prog','etat','meca']"
             [paginator]="true"
-            [globalFilterFields]="['date', 'country.name', 'representative.name', 'status']"
+            [globalFilterFields]="['date', 'voiture', 'description', 'prog','etat','meca']"
             [tableStyle]="{ 'min-width': '75rem' }"
             [(selection)]="selectedReparation"
             [rowHover]="true"
@@ -97,21 +97,30 @@ interface ExportColumn {
                         <p-tableHeaderCheckbox />
                     </th>
                     <!-- <th style="min-width: 16rem">Type</th> -->
-                    <th pSortableColumn="name" style="min-width:16rem">
+                    <th pSortableColumn="date" style="min-width:16rem">
                         Date et heure
-                        <p-sortIcon field="name" />
+                        <!-- <p-sortIcon field="date" /> -->
                     </th>
-                    <th pSortableColumn="category" style="min-width:10rem">
+                    <th pSortableColumn="voiture" style="min-width:16rem">
+                        Voiture
+                        <!-- <p-sortIcon field="voiture" /> -->
+                    </th>
+                    <th pSortableColumn="description" style="min-width:10rem">
                         Description
-                        <p-sortIcon field="category" />
+                        <!-- <p-sortIcon field="description" /> -->
                     </th>
-                    <th pSortableColumn="rating" style="min-width: 12rem">
+                    <th pSortableColumn="prog" style="min-width: 12rem">
                         Progression
-                        <p-sortIcon field="rating" />
+                        <!-- <p-sortIcon field="prog" /> -->
                     </th>
-                    <th pSortableColumn="inventoryStatus" style="min-width: 12rem">
+                    <th pSortableColumn="etat" style="min-width: 12rem">
                         État
-                        <p-sortIcon field="inventoryStatus" />
+                        <p-sortIcon field="etat" />
+                    </th>
+
+                    <th pSortableColumn="meca" style="min-width: 12rem">
+                        Mecanicien
+                        <!-- <p-sortIcon field="meca" /> -->
                     </th>
                     <th style="min-width: 12rem"></th>
                 </tr>
@@ -125,18 +134,22 @@ interface ExportColumn {
                     </td>
                     <!-- <td style="min-width: 12rem">{{ reparation.code }}</td> -->
                     <td style="min-width: 16rem">{{ reparation.dateDebut }}</td>
+                    <td style="min-width: 16rem">{{ reparation.marque }} | {{reparation.modele}}</td>
                     <!-- <td>{{ reparation.price | currency: 'USD' }}</td> -->
                     <td>{{ reparation.descriptionProbleme }}</td>
                     <td>
-                        <p-progressBar [value]="0 * 20"></p-progressBar>
+                        <p-progressBar [value]="60"></p-progressBar>
                     </td>
                     <td>
                         <p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat))" />
                     </td>
+
+                    <td style="min-width: 16rem">{{ reparation.nom ? reparation.nom : "Not assigned" }}</td>
                     <td>
-                        <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="detailIntervention(reparation,reparation._id)" />
+                        <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="detailIntervention(reparation,reparation._id,reparation.marque,reparation.modele)" />
                     </td>
                 </tr>
+
             </ng-template>
         </p-table>
 
@@ -179,7 +192,7 @@ interface ExportColumn {
             </ng-template>
         </p-dialog>
 
-        <p-dialog [(visible)]="interventionDialog" [style]="{ width: '450px' }" header="Intervention" [modal]="true">
+        <p-dialog [(visible)]="interventionDialog" [style]="{ width: '450px' }" header="Intervention " [modal]="true">
     <ng-template #content>
         <div class="flex flex-col gap-6">
             <div>
@@ -189,20 +202,37 @@ interface ExportColumn {
             </div>
             <div>
                 <label for="description" class="block font-bold mb-3">Vehicule</label>
-                Mazda - BT50
+            {{marque}} | {{modele}}
             </div>
             <div>
                 <label for="description" class="block font-bold mb-3">Description</label>
-                <ul>Probleme : Problème de caméra de recul</ul>
-                <ul>Diagnostique : Verifier le camera de recul, ou changer s'il le faut</ul>
+                <ul>Probleme : {{reparation.descriptionProbleme}}</ul>
+                <ul>Diagnostique : {{reparation.notesTechniques}}</ul>
             </div>
             <div>
-                <label for="description" class="block font-bold mb-3">Détails</label>
-                <ul>
-                    <li *ngFor="let detail of details">
-                        {{ detail.nomPiece }} - {{ detail.prixUnitaire }} €
-                    </li>
-                </ul>
+                <!-- <label for="description" class="block font-bold mb-3">Détails</label> -->
+                <p-table
+                    [value]="details">
+                <ng-template #header>
+                <tr>
+                    <th>Piece</th>
+                    <th>Qté</th>
+                    <th>PU</th>
+                    <th>MO</th>
+                    <th>Total</th>
+                </tr>
+                </ng-template>
+                <ng-template #body let-detail>
+                <tr>
+                    <td>{{ detail.nomPiece }}</td>
+                    <td>{{ detail.quantite }}</td>
+                    <td>{{ detail.prixUnitaire }} €</td>
+                    <td>{{ detail.main_d_oeuvre }} €</td>
+                    <td>{{ (detail.quantite * detail.prixUnitaire) + detail.main_d_oeuvre }} €</td>
+                </tr>
+                 {{setRepId(detail.reparationId ? detail.reparationId : "")}}
+                </ng-template>
+                </p-table>
             </div>
             <div>
                 <label for="description" class="block font-bold mb-3">Devis</label>
@@ -212,8 +242,8 @@ interface ExportColumn {
     </ng-template>
 
     <ng-template #footer> 
-        <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-        <p-button label="Accepter" icon="pi pi-check" (click)="acceptDevis()" />
+        <p-button label="Refuser" [disabled]="details.length==0 || reparation.etat == 'en cours' || reparation.etat == 'annulé'" icon="pi pi-times" (click)="refuserDevis(repId, updateAnnule)" />
+        <p-button label="Accepter" [disabled]="details.length==0 || reparation.etat == 'en cours' || reparation.etat == 'annulé'" icon="pi pi-check" (click)="acceptDevis(repId, updateEnCours)" />
     </ng-template>
 </p-dialog>
 
@@ -236,11 +266,26 @@ export class Intervention implements OnInit {
         coutFinal: ''
     }
 
+    updateEnCours = {
+        etat: 'en cours'
+    }
+
+    updateAnnule = {
+        etat: 'annulé'
+    }
+
+
+    repId: string = ""
+
+    marque: string = ""
+
+    modele: string = ""
+
     reparations: ReparationCl[] = []
 
     total: any = {}
 
-    details: any = {}
+    details: any = []
 
     reparation!: ReparationCl
 
@@ -263,6 +308,18 @@ export class Intervention implements OnInit {
         private confirmationService: ConfirmationService
 
     ) { }
+
+    setRepId(id: string) {
+        this.repId = id
+    }
+
+    setMarque(id: string) {
+        this.marque = id
+    }
+
+    setModele(id: string) {
+        this.modele = id
+    }
 
     ngOnInit() {
         this.loadReparations()
@@ -297,13 +354,15 @@ export class Intervention implements OnInit {
         this.newInterventionDialog = true;
     }
 
-    detailIntervention(rep: ReparationCl, id: string) {
+    detailIntervention(rep: ReparationCl,id: string, mr:string, md:string) {
         console.log("id", id)
         this.devisService.getDevis(id).subscribe((data) => {
             this.details = data.details
             this.total = data.total
             console.log("devis", this.details)
         })
+        this.setMarque(mr)
+        this.setModele(md)
         this.reparation = { ...rep };
         this.interventionDialog = true;
     }
@@ -331,62 +390,105 @@ export class Intervention implements OnInit {
         this.newInterventionDialog = false;
         this.interventionDialog = false;
         this.submitted = false;
+        this.details = []
     }
 
-    // findIndexById(id: string): number {
-    //     let index = -1;
-    //     for (let i = 0; i < this.products().length; i++) {
-    //         if (this.products()[i].id === id) {
-    //             index = i;
-    //             break;
-    //         }
-    //     }
+    saveIntervention() {
+        this.reparationService.setReparation(this.newRep).subscribe(
+            (response) => {
+                this.loadReparations()
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Successful',
+                    detail: 'Intervention Added',
+                    life: 3000
+                });
+            },
+            (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'erreur',
+                    detail: '',
+                    life: 3000
+                });
+            }
+        )
+        this.newRep = {
+            vehiculeId: '',
+            mecanicienId: '',
+            descriptionProbleme: '',
+            etat: 'en attente',
+            dateDebut: '',
+            dateFin: '',
+            notesTechniques: '',
+            coutFinal: ''
+        }
+        this.newInterventionDialog = false;
+    }
 
-    //     return index;
-    // }
+    acceptDevis(id: string, update: any) {
+        console.log(id, update)
+        this.reparationService.updateReparation(id,update).subscribe(
+            (response) => {
+                this.repId=""
+                this.loadReparations()
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Successful',
+                    detail: 'Intervention Added',
+                    life: 3000
+                });
+            },
+            (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'erreur',
+                    detail: '',
+                    life: 3000
+                });
+            }
+        )
+        // this.repId=""
+        this.hideDialog()
+    }
 
-    // createId(): string {
-    //     let id = '';
-    //     var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    //     for (var i = 0; i < 5; i++) {
-    //         id += chars.charAt(Math.floor(Math.random() * chars.length));
-    //     }
-    //     return id;
-    // }
+    refuserDevis(id: string, update: any) {
+        console.log(id, update)
+        this.reparationService.updateReparation(id,update).subscribe(
+            (response) => {
+                this.repId=""
+                this.loadReparations()
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Successful',
+                    detail: 'Intervention Added',
+                    life: 3000
+                });
+            },
+            (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'erreur',
+                    detail: '',
+                    life: 3000
+                });
+            }
+        )
+        this.hideDialog()
+    }
 
-
-    // loadDemoData() {
-    //     this.productService.getProducts().then((data) => {
-    //         this.products.set(data);
-    //     });
-
-    //     this.statuses = [
-    //         { label: 'Réparation', value: 'reparation' },
-    //         { label: 'Révision', value: 'revision' },
-    //         { label: 'Diagnostic', value: 'diagnostic' }
-    //     ];
-
-    //     this.cols = [
-    //         { field: 'code', header: 'Code', customExportHeader: 'Product Code' },
-    //         { field: 'name', header: 'Name' },
-    //         { field: 'price', header: 'Price' },
-    //         { field: 'category', header: 'Category' }
-    //     ];
-
-    //     this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
-    // }
 
     getSeverity(status: string) {
         switch (status) {
-            case 'En cours':
+            case 'en cours':
                 return 'blue';
-            case 'Terminé':
+            case 'terminé':
                 return 'green';
-            case 'En attente':
+            case 'en attente':
                 return 'yellow';
-            case 'Annulé':
+            case 'annulé':
                 return 'red';
-            case 'Prêt':
+            case 'prêt':
                 return 'orange';
             default:
                 return 'info';
@@ -410,29 +512,4 @@ export class Intervention implements OnInit {
         }
     }
 
-    saveIntervention() {
-        this.reparationService.setVehicule(this.newRep).subscribe(
-            (response) => {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Intervention Added',
-                    life: 3000
-                });
-            },
-            (error) => {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'erreur',
-                    detail: '',
-                    life: 3000
-                });
-            }
-        )
-        console.log("newRep", this.newRep)
-        this.loadReparations()
-        this.newInterventionDialog = false;
-    }
-
-    acceptDevis() { }
 }
