@@ -10,12 +10,17 @@ import { TagModule } from 'primeng/tag';
 import { Product, ProductService } from '../service/product.service';
 import { StockService, Stock } from '../service/stock.service';
 import { DialogModule } from 'primeng/dialog';
+import { ToolbarModule } from 'primeng/toolbar';
 
 @Component({
     selector: 'app-pieces',
-    standalone: true,
-    imports: [CommonModule, DataViewModule, FormsModule, SelectButtonModule, PickListModule, OrderListModule, TagModule, ButtonModule, DialogModule],
+    imports: [CommonModule, DataViewModule, FormsModule, SelectButtonModule, PickListModule, OrderListModule, TagModule, ButtonModule, DialogModule, ToolbarModule],
     template: `
+        <p-toolbar styleClass="mb-6">
+            <ng-template #start>
+                <p-button label="Nouveau intervention" icon="pi pi-plus" severity="secondary" class="mr-2" />
+            </ng-template>
+        </p-toolbar>
         <div class="flex flex-col">
             <div class="card">
                 <div class="font-semibold text-xl">Inventaire</div>
@@ -124,6 +129,29 @@ import { DialogModule } from 'primeng/dialog';
                 </p-dataview>
             </div>
         </div>
+
+        <p-dialog [(visible)]="orderDialog" [style]="{ width: '450px' }" header="Commande de pièce" [modal]="true">
+            <ng-template #content>
+                <div class="flex flex-col gap-6">
+                    <!-- <div>
+                        <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
+                    </div> -->
+                    <div>
+                        <label for="description" class="block font-bold mb-3">Pièce</label>
+                        Marque et modèle, Année de mise en circulation, Kilométrage actuel
+                    </div>
+                    <div>
+                        <label for="description" class="block font-bold mb-3">Quantité</label>
+                        <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="Entrez un nombre" />
+                    </div>
+                </div>
+            </ng-template>
+
+            <ng-template #footer>
+                <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
+                <p-button label="Accepter" icon="pi pi-check" (click)="save()" />
+            </ng-template>
+        </p-dialog>
 
         <p-dialog [(visible)]="orderDialog" [style]="{ width: '450px' }" header="Commande de pièce" [modal]="true">
             <ng-template #content>
