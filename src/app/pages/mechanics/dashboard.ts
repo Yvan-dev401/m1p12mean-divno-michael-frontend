@@ -217,13 +217,18 @@ interface AutoCompleteCompleteEvent {
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
-                        <label for="description" class="block font-bold mb-3"><p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat || ''))" /></label>
+                        <label for="description" class="block font-bold mb-3">
+                            <p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat || ''))" />
+                        </label>
                     </div>
                     <div>
                         <label style="margin-bottom: 20px" for="description" class="block font-bold mb-3">Liste des tâches</label>
-                        <div *ngFor="let task of tasks; let i = index" style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <p-checkbox [(ngModel)]="task.completed" [style]="{ marginRight: '10px' }" inputId="task_{{ i }}" binary="true" (onChange)="updateTaskStatus(task)"></p-checkbox>
-                            <span>{{ task.name }} ({{ task.quantite }})</span>
+                        <div *ngFor="let task of tasks; let i = index" style="display: flex; flex-direction: column; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center;">
+                                <p-checkbox [(ngModel)]="task.completed" [style]="{ marginRight: '10px' }" inputId="task_{{ i }}" binary="true" (onChange)="updateTaskStatus(task)" [disabled]="isQuantityExceedingStock(task)"> </p-checkbox>
+                                <span>{{ task.name }} ({{ task.quantite }})</span>
+                            </div>
+                            <div *ngIf="isQuantityExceedingStock(task)" style="color: red; font-size: 12px; margin-left: 30px;">Quantité demandée dépasse la quantité disponible en stock !</div>
                         </div>
                     </div>
                 </div>
@@ -231,7 +236,7 @@ interface AutoCompleteCompleteEvent {
 
             <ng-template #footer>
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Terminer" icon="pi pi-check" (click)="hideDialog()" />
+                <p-button label="Terminer" icon="pi pi-check" (click)="hideDialog()" [disabled]="areTasksExceedingStock()" />
             </ng-template>
         </p-dialog>
 
@@ -340,6 +345,15 @@ export class Dashboard implements OnInit {
         );
     }
 
+    isQuantityExceedingStock(task: { stockId: string; quantite: number }): boolean {
+        const stock = this.stocks?.find((s) => s._id === task.stockId);
+        return stock ? task.quantite > stock.quantiteDisponible : false;
+    }
+
+    areTasksExceedingStock(): boolean {
+        return this.tasks.some((task) => this.isQuantityExceedingStock(task));
+    }
+
     updateTaskStatus(task: { _id: string; stockId: string; name: string; completed: boolean; quantite: number }) {
         const _id = task._id;
         const updateData = {
@@ -422,7 +436,7 @@ export class Dashboard implements OnInit {
                 console.log('Réponse :', response);
                 // this.hideDialog();
                 const updateData = {
-                    mecanicienId: this.token // Remplacement par le token.id
+                    mecanicienId: this.token
                 };
 
                 this.reparationService.updateReparation(this.reparation._id, updateData).subscribe(
