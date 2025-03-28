@@ -71,7 +71,7 @@ import { ToolbarModule } from 'primeng/toolbar';
                                             <span class="text-xl font-semibold">Ar {{ stock.prixUnitaire }}</span>
                                             <div class="flex flex-row-reverse md:flex-row gap-2">
                                                 <!-- <p-button icon="pi pi-heart" styleClass="h-full" [outlined]="true"></p-button> -->
-                                                <p-button icon="pi pi-shopping-cart" label="Commander" (click)="order()" styleClass="flex-auto md:flex-initial whitespace-nowrap"></p-button>
+                                                <p-button icon="pi pi-shopping-cart" label="Commander" (click)="orderOpen()" styleClass="flex-auto md:flex-initial whitespace-nowrap"></p-button>
                                             </div>
                                         </div>
                                     </div>
@@ -117,6 +117,7 @@ import { ToolbarModule } from 'primeng/toolbar';
                                         <div class="flex flex-col gap-6 mt-6">
                                             <span class="text-2xl font-semibold">Ar {{ stock.prixUnitaire }}</span>
                                             <div class="flex gap-2">
+                                                <p-button icon="pi pi-shopping-cart" label="Commander" (click)="orderOpen()" styleClass="flex-auto md:flex-initial whitespace-nowrap"></p-button>
                                                 <!-- <p-button icon="pi pi-shopping-cart" label="Commander" (click)="order()" [disabled]="item.inventoryStatus === 'OUTOFSTOCK'" class="flex-auto whitespace-nowrap" styleClass="w-full"></p-button> -->
                                                 <!-- <p-button icon="pi pi-heart" styleClass="h-full" [outlined]="true"></p-button> -->
                                             </div>
@@ -138,19 +139,19 @@ import { ToolbarModule } from 'primeng/toolbar';
                     </div> -->
                     <div>
                         <label for="description" class="block font-bold mb-3">Nom pièce</label>
-                        <input type="text" id="description" class="block w-full p-2 border rounded" placeholder="Ex: Bougie" />
+                        <input type="text" id="description" class="block w-full p-2 border rounded" [(ngModel)]="namePiece" placeholder="Ex: Bougie" />
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Quantité</label>
-                        <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="Entrez un nombre" />
+                        <input type="number" id="description" class="block w-full p-2 border rounded" [(ngModel)]="quantity" placeholder="Entrez un nombre" />
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Prix</label>
-                        <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="5000 Ar" />
+                        <input type="number" id="description" class="block w-full p-2 border rounded" [(ngModel)]="price" placeholder="5000 Ar" />
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Main d'oeuvre</label>
-                        <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="5000 Ar" />
+                        <input type="number" id="description" class="block w-full p-2 border rounded" [(ngModel)]="main_d_oeuvre" placeholder="5000 Ar" />
                     </div>
                 </div>
             </ng-template>
@@ -173,14 +174,14 @@ import { ToolbarModule } from 'primeng/toolbar';
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Quantité</label>
-                        <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="Entrez un nombre" />
+                        <input type="number" id="description" class="block w-full p-2 border rounded" [(ngModel)]="orderQuantity" placeholder="Entrez un nombre" />
                     </div>
                 </div>
             </ng-template>
 
             <ng-template #footer>
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Accepter" icon="pi pi-check" (click)="save()" />
+                <p-button label="Accepter" icon="pi pi-check" (click)="order()" />
             </ng-template>
         </p-dialog>
     `,
@@ -202,6 +203,12 @@ export class Pieces {
 
     products: Product[] = [];
     stocks: Stock[] = [];
+
+    namePiece: string = '';
+    quantity: number = 0;
+    price: number = 0;
+    main_d_oeuvre: number = 0;
+    orderQuantity: number = 0;
 
     sourceCities: any[] = [];
 
@@ -244,16 +251,27 @@ export class Pieces {
     listStocks() {
         this.stockService.getStock().subscribe((data) => (this.stocks = data));
     }
-
-    order() {
-        this.orderDialog = true;
-    }
-
     newPiece() {
         this.newPieceDialog = true;
     }
 
+    orderOpen() {
+        this.orderDialog = true;
+    }
+
     save() {
+        this.stockService.insertStock({
+            nomPiece: this.namePiece,
+            quantiteDisponible: this.quantity,
+            prixUnitaire: this.price,
+            main_d_oeuvre: this.main_d_oeuvre
+        }).subscribe(() => {
+            this.listStocks();
+            this.newPieceDialog = false;
+        });
+    }
+
+    order() {
         this.orderDialog = false;
     }
 

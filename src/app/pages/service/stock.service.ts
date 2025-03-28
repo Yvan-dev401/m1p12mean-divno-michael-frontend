@@ -13,6 +13,10 @@ export class StockService {
     getStock(): Observable<Stock[]> {
         return this.http.get<Stock[]>(this.apiUrl);
     }
+
+    insertStock(stock: Partial<Stock>): Observable<Stock> {
+        return this.http.post<Stock>(this.apiUrl, stock);
+    }
 }
 
 export interface Stock {

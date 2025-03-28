@@ -26,6 +26,7 @@ import { StockService, Stock } from '../service/stock.service';
 import { DevisService, Devis } from '../service/devis.service';
 import { AutoComplete } from 'primeng/autocomplete';
 import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../../services/user/auth.service';
 
 interface Column {
     field: string;
@@ -106,12 +107,12 @@ interface AutoCompleteCompleteEvent {
                         Date et heure
                         <p-sortIcon field="name" />
                     </th>
-                    <th pSortableColumn="name" style="min-width:16rem">
-                        Mécanicien
-                        <p-sortIcon field="name" />
+                    <th pSortableColumn="category" style="min-width:10rem">
+                        Voiture
+                        <p-sortIcon field="category" />
                     </th>
                     <th pSortableColumn="category" style="min-width:10rem">
-                        Type
+                        Description
                         <p-sortIcon field="category" />
                     </th>
                     <th pSortableColumn="rating" style="min-width: 12rem">
@@ -121,6 +122,10 @@ interface AutoCompleteCompleteEvent {
                     <th pSortableColumn="inventoryStatus" style="min-width: 12rem">
                         État
                         <p-sortIcon field="inventoryStatus" />
+                    </th>
+                    <th pSortableColumn="name" style="min-width:16rem">
+                        Mécanicien
+                        <p-sortIcon field="name" />
                     </th>
                     <th style="min-width: 12rem"></th>
                 </tr>
@@ -136,11 +141,12 @@ interface AutoCompleteCompleteEvent {
                     <!-- <td>{{ product.price | currency: 'USD' }}</td> -->
                     <td>{{ reparation.mecanicienId }}</td>
                     <td>{{ reparation.etat }}</td>
-                    <td>
-                        <p-progressBar [value]="20"></p-progressBar>
-                    </td>
+                    <td><p-progressBar [value]="20"></p-progressBar></td>
                     <td>
                         <p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat))" />
+                    </td>
+                    <td>
+                        {{ reparation.etat }}
                     </td>
                     <td>
                         <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="interventionOpen(reparation)" />
@@ -279,14 +285,18 @@ export class Dashboard implements OnInit {
 
     cols!: Column[];
 
+    token!: string;
+
     constructor(
         private stockService: StockService,
         private reparationService: ReparationService,
-        private devisService: DevisService
+        private devisService: DevisService,
+        private authService: AuthService
     ) {}
 
     ngOnInit() {
         // this.loadDemoData();
+        this.token = this.authService.getToken();
         this.stockService.getStock().subscribe((stocks) => {
             this.stocks = stocks;
         });
@@ -396,6 +406,50 @@ export class Dashboard implements OnInit {
         this.submitted = false;
     }
 
+    saveTask() {
+        console.log('Items à sauvegarder :', this.items);
+
+        const itemsToSave = this.items.map((item) => ({
+            stockId: item.selectedStock._id,
+            nomPiece: item.selectedStock.nomPiece,
+            quantite: item.quantity,
+            reparationId: this.reparation._id, // Ajout de l'ID de la réparation
+            etat: false
+        }));
+
+        this.devisService.insert(itemsToSave).subscribe(
+            (response) => {
+                console.log('Réponse :', response);
+                // this.hideDialog();
+                const updateData = {
+                    mecanicienId: this.token // Remplacement par le token.id
+                };
+
+                this.reparationService.updateReparation(this.reparation._id, updateData).subscribe(
+                    (response) => {
+                        console.log('Intervention mise à jour avec succès :', response);
+                        this.loadReparations(); // Recharger les interventions après la mise à jour
+                    },
+                    (error) => {
+                        console.log(updateData);
+                        console.error("Erreur lors de la mise à jour de l'intervention :", error);
+                    }
+                );
+
+                window.location.reload();
+            },
+            (error) => {
+                console.error('Erreur :', error);
+            }
+        );
+    }
+
+    updateInterventionStatus(reparation: Reparation) {
+        const updateData = {
+            etat: 'Terminé'
+        };
+    }
+
     getSeverity(status: string) {
         switch (status) {
             case 'En cours':
@@ -428,35 +482,6 @@ export class Dashboard implements OnInit {
             default:
                 return 'info';
         }
-    }
-
-    saveTask() {
-        console.log('Items à sauvegarder :', this.items);
-
-        const itemsToSave = this.items.map((item) => ({
-            stockId: item.selectedStock._id,
-            nomPiece: item.selectedStock.nomPiece,
-            quantite: item.quantity,
-            reparationId: this.reparation._id, // Ajout de l'ID de la réparation
-            etat: false
-        }));
-
-        this.devisService.insert(itemsToSave).subscribe(
-            (response) => {
-                console.log('Réponse :', response);
-                // this.hideDialog();
-                window.location.reload();
-            },
-            (error) => {
-                console.error('Erreur :', error);
-            }
-        );
-    }
-
-    updateInterventionStatus(reparation: Reparation) {
-        const updateData = {
-            etat: 'Terminé'
-        };
     }
 
     /* loadTasks() {

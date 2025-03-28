@@ -85,7 +85,8 @@ export class RecentSalesWidget {
 
     loadReparations() {
         this.reparationService.getReparations().subscribe((data) => {
-            this.reparations = data;
+            // Filtrer les réparations avec un état "En cours"
+            this.reparations = data.filter((reparation) => reparation.etat === 'En cours');
         });
     }
 
