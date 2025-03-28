@@ -14,7 +14,11 @@ export class ReparationClService {
         return this.http.get(this.apiUrl);
     }
 
-    setVehicule(rep:any): Observable<any>{
+    updateReparation(id: string, rep:any): Observable<any>{
+        return this.http.put(`${this.apiUrl}/${id}`, rep)
+      }
+
+    setReparation(rep:any): Observable<any>{
       return this.http.post(this.apiUrl, rep);
     }
 }

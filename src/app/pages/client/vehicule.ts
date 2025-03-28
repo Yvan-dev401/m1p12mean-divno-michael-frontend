@@ -181,33 +181,6 @@ interface ExportColumn {
             </ng-template>
         </p-dialog>
 
-        <!-- <p-dialog [(visible)]="detailDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
-            <ng-template #content>
-                <div class="flex flex-col gap-6">
-                    <div>
-                        <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
-                    </div>
-                    <div>
-                        <label for="description" class="block font-bold mb-3">Description</label>
-                        Marque et modèle, Année de mise en circulation, Kilométrage actuel
-                    </div>
-                    <div>
-                        <label for="description" class="block font-bold mb-3">Détails</label>
-                        Marque et modèle, Année de mise en circulation, Kilométrage actuel
-                    </div>
-                    <div>
-                        <label for="description" class="block font-bold mb-3">Devis</label>
-                        Total : 0.00 €
-                    </div>
-                </div>
-            </ng-template>
-
-            <ng-template #footer>
-                <p-button label="Fermer" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Accepter" icon="pi pi-check" (click)="detailVehicule()" />
-            </ng-template>
-        </p-dialog> -->
-
         <!-- <p-dialog [(visible)]="updateDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
@@ -279,33 +252,6 @@ export class ListeVehicule implements OnInit {
         });
     }
 
-    // getVehicule(){
-    //     this.vehiculeService.getVehicule().then((data) => {
-    //         this.vehicules.set(data)
-    //     })
-    // }
-
-    // loadDemoData() {
-    //     this.productService.getProducts().then((data) => {
-    //         this.products.set(data);
-    //     });
-
-    //     this.statuses = [
-    //         { label: 'Réparation', value: 'reparation' },
-    //         { label: 'Révision', value: 'revision' },
-    //         { label: 'Diagnostic', value: 'diagnostic' }
-    //     ];
-
-    //     this.cols = [
-    //         { field: 'code', header: 'Code', customExportHeader: 'Product Code' },
-    //         { field: 'name', header: 'Name' },
-    //         { field: 'price', header: 'Price' },
-    //         { field: 'category', header: 'Category' }
-    //     ];
-
-    //     this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
-    // }
-
     onGlobalFilter(table: Table, event: Event) {
         table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
     }
@@ -316,16 +262,6 @@ export class ListeVehicule implements OnInit {
         this.newVehicule = true;
     }
 
-    // detailVehicule(product: Product) {
-    //     this.product = { ...product };
-    //     this.detailDialog = true;
-    // }
-
-    // updateDialogOpen() {
-    //     this.updateDialog = true;
-    // }
-
-    // Suppression intervention sélectionné
     deleteSelectedVehicule() {
         this.confirmationService.confirm({
             message: 'Are you sure you want to delete the selected products?',
@@ -352,27 +288,6 @@ export class ListeVehicule implements OnInit {
         this.updateDialog = false;
         this.submitted = false;
     }
-
-    // findIndexById(id: string): number {
-    //     let index = -1;
-    //     for (let i = 0; i < this.products().length; i++) {
-    //         if (this.products()[i].id === id) {
-    //             index = i;
-    //             break;
-    //         }
-    //     }
-
-    //     return index;
-    // }
-
-    // createId(): string {
-    //     let id = '';
-    //     var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    //     for (var i = 0; i < 5; i++) {
-    //         id += chars.charAt(Math.floor(Math.random() * chars.length));
-    //     }
-    //     return id;
-    // }
 
     getSeverity(status: string) {
         switch (status) {
