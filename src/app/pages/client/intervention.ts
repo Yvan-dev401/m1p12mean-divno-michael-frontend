@@ -138,7 +138,7 @@ interface ExportColumn {
                     <!-- <td>{{ reparation.price | currency: 'USD' }}</td> -->
                     <td>{{ reparation.descriptionProbleme }}</td>
                     <td>
-                        <p-progressBar [value]="60"></p-progressBar>
+                        <p-progressBar [value]="reparation.progression"></p-progressBar>
                     </td>
                     <td>
                         <p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat))" />
