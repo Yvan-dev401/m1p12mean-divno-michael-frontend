@@ -13,6 +13,14 @@ export class ReparationService {
     getReparations(): Observable<Reparation[]> {
         return this.http.get<Reparation[]>(this.apiUrl);
     }
+
+    updateReparation(id: string, reparation: Partial<Reparation>): Observable<Reparation> {
+        return this.http.put<Reparation>(`${this.apiUrl}/${id}`, reparation);
+    }
+
+    getTodayReparations(): Observable<Reparation[]> {
+        return this.http.get<Reparation[]>(`${this.apiUrl}/today`);
+    }
 }
 
 export interface Reparation {

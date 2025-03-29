@@ -5,21 +5,21 @@ import { Observable } from 'rxjs';
 @Injectable({
     providedIn: 'root'
 })
-export class StockService {
-    private apiUrl = 'http://localhost:5000/stock';
+export class SortieSevice {
+    private apiUrl = 'http://localhost:5000/sortie';
 
     constructor(private http: HttpClient) {}
 
-    getStock(): Observable<Stock[]> {
-        return this.http.get<Stock[]>(this.apiUrl);
+    getSortie(): Observable<Sortie[]> {
+        return this.http.get<Sortie[]>(this.apiUrl);
     }
 
-    insertStock(stock: Partial<Stock>): Observable<Stock> {
-        return this.http.post<Stock>(this.apiUrl, stock);
+    getSortieById(idReparation: string): Observable<Sortie> {
+        return this.http.get<Sortie>(`${this.apiUrl}/${idReparation}`);
     }
 }
 
-export interface Stock {
+export interface Sortie {
     _id: string;
     nomPiece: string;
     quantiteDisponible: number;

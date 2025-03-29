@@ -24,8 +24,10 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { ReparationService, Reparation } from '../service/reparation.service';
 import { StockService, Stock } from '../service/stock.service';
 import { DevisService, Devis } from '../service/devis.service';
+import { SortieSevice, Sortie } from '../service/sortie.service';
 import { AutoComplete } from 'primeng/autocomplete';
 import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../../services/user/auth.service';
 
 interface Column {
     field: string;
@@ -106,12 +108,12 @@ interface AutoCompleteCompleteEvent {
                         Date et heure
                         <p-sortIcon field="name" />
                     </th>
-                    <th pSortableColumn="name" style="min-width:16rem">
-                        Mécanicien
-                        <p-sortIcon field="name" />
+                    <th pSortableColumn="category" style="min-width:10rem">
+                        Voiture
+                        <p-sortIcon field="category" />
                     </th>
                     <th pSortableColumn="category" style="min-width:10rem">
-                        Type
+                        Description
                         <p-sortIcon field="category" />
                     </th>
                     <th pSortableColumn="rating" style="min-width: 12rem">
@@ -121,6 +123,10 @@ interface AutoCompleteCompleteEvent {
                     <th pSortableColumn="inventoryStatus" style="min-width: 12rem">
                         État
                         <p-sortIcon field="inventoryStatus" />
+                    </th>
+                    <th pSortableColumn="name" style="min-width:16rem">
+                        Mécanicien
+                        <p-sortIcon field="name" />
                     </th>
                     <th style="min-width: 12rem"></th>
                 </tr>
@@ -134,13 +140,14 @@ interface AutoCompleteCompleteEvent {
                     </td> -->
                     <td style="min-width: 16rem">{{ reparation.dateDebut }}</td>
                     <!-- <td>{{ product.price | currency: 'USD' }}</td> -->
-                    <td>{{ reparation.mecanicienId }}</td>
-                    <td>{{ reparation.etat }}</td>
-                    <td>
-                        <p-progressBar [value]="20"></p-progressBar>
-                    </td>
+                    <td>{{ reparation.marque }}{{ ' ' }}{{ reparation.modele }}</td>
+                    <td>{{ reparation.descriptionProbleme }}</td>
+                    <td><p-progressBar [value]="20"></p-progressBar></td>
                     <td>
                         <p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat))" />
+                    </td>
+                    <td>
+                        {{ reparation.nom ? reparation.nom : 'Non assigné' }}
                     </td>
                     <td>
                         <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="interventionOpen(reparation)" />
@@ -211,13 +218,18 @@ interface AutoCompleteCompleteEvent {
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
-                        <label for="description" class="block font-bold mb-3"><p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat || ''))" /></label>
+                        <label for="description" class="block font-bold mb-3">
+                            <p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat || ''))" />
+                        </label>
                     </div>
                     <div>
                         <label style="margin-bottom: 20px" for="description" class="block font-bold mb-3">Liste des tâches</label>
-                        <div *ngFor="let task of tasks; let i = index" style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <p-checkbox [(ngModel)]="task.completed" [style]="{ marginRight: '10px' }" inputId="task_{{ i }}" binary="true" (onChange)="updateTaskStatus(task)"></p-checkbox>
-                            <span>{{ task.name }} ({{ task.quantite }})</span>
+                        <div *ngFor="let task of tasks; let i = index" style="display: flex; flex-direction: column; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center;">
+                                <p-checkbox [(ngModel)]="task.completed" [style]="{ marginRight: '10px' }" inputId="task_{{ i }}" binary="true" (onChange)="updateTaskStatus(task)" [disabled]="isQuantityExceedingStock(task)"> </p-checkbox>
+                                <span>{{ task.name }} ({{ task.quantite }})</span>
+                            </div>
+                            <div *ngIf="isQuantityExceedingStock(task)" style="color: red; font-size: 12px; margin-left: 30px;">Quantité demandée dépasse la quantité disponible en stock !</div>
                         </div>
                     </div>
                 </div>
@@ -225,7 +237,7 @@ interface AutoCompleteCompleteEvent {
 
             <ng-template #footer>
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Terminer" icon="pi pi-check" (click)="hideDialog()" />
+                <p-button label="Terminer" icon="pi pi-check" (click)="updateInterventionStatus(reparation)" [disabled]="areTasksExceedingStock()" />
             </ng-template>
         </p-dialog>
 
@@ -253,9 +265,11 @@ export class Dashboard implements OnInit {
 
     // Service
     stocks: any[] | undefined;
+
     selectedReparations: any[] = [];
     selectedStock: any;
     selecedDevis: any;
+    selectedSortie: any;
 
     // Variables
     reparations: Reparation[] = [];
@@ -279,14 +293,19 @@ export class Dashboard implements OnInit {
 
     cols!: Column[];
 
+    token!: string;
+
     constructor(
         private stockService: StockService,
         private reparationService: ReparationService,
-        private devisService: DevisService
+        private devisService: DevisService,
+        private sortieService: SortieSevice,
+        private authService: AuthService
     ) {}
 
     ngOnInit() {
         // this.loadDemoData();
+        // this.token = this.authService.getToken();
         this.stockService.getStock().subscribe((stocks) => {
             this.stocks = stocks;
         });
@@ -328,6 +347,15 @@ export class Dashboard implements OnInit {
                 console.error('Erreur lors de la récupération des devis :', error);
             }
         );
+    }
+
+    isQuantityExceedingStock(task: { stockId: string; quantite: number }): boolean {
+        const stock = this.stocks?.find((s) => s._id === task.stockId);
+        return stock ? task.quantite > stock.quantiteDisponible : false;
+    }
+
+    areTasksExceedingStock(): boolean {
+        return this.tasks.some((task) => this.isQuantityExceedingStock(task));
     }
 
     updateTaskStatus(task: { _id: string; stockId: string; name: string; completed: boolean; quantite: number }) {
@@ -396,17 +424,71 @@ export class Dashboard implements OnInit {
         this.submitted = false;
     }
 
+    saveTask() {
+        console.log('Items à sauvegarder :', this.items);
+
+        const itemsToSave = this.items.map((item) => ({
+            stockId: item.selectedStock._id,
+            nomPiece: item.selectedStock.nomPiece,
+            quantite: item.quantity,
+            reparationId: this.reparation._id, // Ajout de l'ID de la réparation
+            etat: false
+        }));
+
+        this.devisService.insert(itemsToSave).subscribe(
+            (response) => {
+                console.log('Réponse :', response);
+                // this.hideDialog();
+
+                const token = this.authService.getToken();
+                const updateData = {
+                    mecanicienId: token.id
+                };
+
+                this.reparationService.updateReparation(this.reparation._id, updateData).subscribe(
+                    (response) => {
+                        console.log('Intervention mise à jour avec succès :', response);
+                        this.loadReparations(); // Recharger les interventions après la mise à jour
+                    },
+                    (error) => {
+                        console.log(updateData);
+                        console.error("Erreur lors de la mise à jour de l'intervention :", error);
+                    }
+                );
+
+                window.location.reload();
+            },
+            (error) => {
+                console.error('Erreur :', error);
+            }
+        );
+    }
+
+    updateInterventionStatus(reparation: Reparation) {
+        // Appeler getSortieById avec l'ID de la réparation
+        this.sortieService.getSortieById(reparation._id).subscribe(
+            (sortie) => {
+                // console.log('Sortie récupérée avec succès :', sortie);
+                this.taskDialog = false; 
+                this.loadReparations();
+            },
+            (error) => {
+                console.error('Erreur lors de la récupération de la sortie :', error);
+            }
+        );
+    }
+
     getSeverity(status: string) {
         switch (status) {
-            case 'en cours':
+            case 'En cours':
                 return 'blue';
-            case 'terminé':
+            case 'Terminé':
                 return 'green';
-            case 'en attente':
+            case 'En attente':
                 return 'yellow';
-            case 'annulé':
+            case 'Annulé':
                 return 'red';
-            case 'prêt':
+            case 'Prêt':
                 return 'orange';
             default:
                 return 'info';
@@ -428,35 +510,6 @@ export class Dashboard implements OnInit {
             default:
                 return 'info';
         }
-    }
-
-    saveTask() {
-        console.log('Items à sauvegarder :', this.items);
-
-        const itemsToSave = this.items.map((item) => ({
-            stockId: item.selectedStock._id,
-            nomPiece: item.selectedStock.nomPiece,
-            quantite: item.quantity,
-            reparationId: this.reparation._id, // Ajout de l'ID de la réparation
-            etat: false
-        }));
-
-        this.devisService.insert(itemsToSave).subscribe(
-            (response) => {
-                console.log('Réponse :', response);
-                // this.hideDialog();
-                window.location.reload();
-            },
-            (error) => {
-                console.error('Erreur :', error);
-            }
-        );
-    }
-
-    updateInterventionStatus(reparation: Reparation) {
-        const updateData = {
-            etat: 'Terminé'
-        };
     }
 
     /* loadTasks() {

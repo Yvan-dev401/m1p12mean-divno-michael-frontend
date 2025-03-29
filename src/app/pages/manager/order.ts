@@ -20,6 +20,7 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { Product, ProductService } from '../service/product.service';
+import { CommandeService, Commande } from '../service/commande.service';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 
 interface Column {
@@ -62,7 +63,7 @@ interface ExportColumn {
     template: `
         <p-table
             #dt
-            [value]="products()"
+            [value]="commandes"
             [rows]="10"
             [columns]="cols"
             [paginator]="true"
@@ -99,37 +100,37 @@ interface ExportColumn {
             </ng-template>
 
             <!-- Contenu table -->
-            <ng-template #body let-product>
+            <ng-template #body let-commande>
                 <tr>
-                    <td>{{ product.category }}</td>
-                    <td>2</td>
+                    <td>{{ commande.nomPiece }}</td>
+                    <td>{{ commande.orderQuantite }}</td>
                     <td>
-                        <p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus))" (click)="op.toggle($event)" />
+                        <p-tag [value]="commande.etat" [severity]="mapSeverity(getSeverity(commande.etat))" (click)="op.toggle($event)" />
                         <p-overlayPanel #op>
-                            <div class="status-option" (click)="changeStatus(product, 'En attente'); op.hide()">En attente</div>
-                            <div class="status-option" (click)="changeStatus(product, 'Livré'); op.hide()">Livré</div>
+                            <!-- <div class="status-option" (click)="changeStatus(commande, 'En attente'); op.hide()">En attente</div> -->
+                            <div class="status-option" (click)="changeStatus(commande, 'Livré'); op.hide()">Livré</div>
                         </p-overlayPanel>
                     </td>
-                    <style>
-                        .status-option {
-                            padding: 8px 12px;
-                            cursor: pointer;
-                        }
-
-                        .status-option:hover {
-                            background-color: #f0f0f0;
-                        }
-
-                        .status-option + .status-option {
-                            margin-top: 8px;
-                        }
-                    </style>
                     <td>
                         <!-- <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="editProduct(product)" /> -->
                     </td>
                 </tr>
             </ng-template>
         </p-table>
+        <style>
+            .status-option {
+                padding: 8px 12px;
+                cursor: pointer;
+            }
+
+            .status-option:hover {
+                background-color: #f0f0f0;
+            }
+
+            .status-option + .status-option {
+                margin-top: 8px;
+            }
+        </style>
 
         <p-confirmdialog [style]="{ width: '450px' }" />
     `,
@@ -140,13 +141,10 @@ export class Order implements OnInit {
     interventionDialog: boolean = false;
 
     products = signal<Product[]>([]);
-
     product!: Product;
-
     selectedProducts!: Product[] | null;
 
     submitted: boolean = false;
-
     statuses!: any[];
 
     @ViewChild('dt') dt!: Table;
@@ -155,39 +153,36 @@ export class Order implements OnInit {
 
     cols!: Column[];
 
+    // Commande :
+    commande!: Commande;
+    commandes: Commande[] = [];
+    selectedCommande!: Commande[] | null;
+    commandeStatuses!: any[];
+
     constructor(
-        private productService: ProductService,
-        private messageService: MessageService,
-        private confirmationService: ConfirmationService
+        private commandeService: CommandeService,
     ) {}
 
     ngOnInit() {
-        this.loadDemoData();
+        this.loadCommande();
     }
 
-    changeStatus(product: Product, status: string) {
-        product.inventoryStatus = status;
-    }
-
-    loadDemoData() {
-        this.productService.getProducts().then((data) => {
-            this.products.set(data);
+        changeStatus(commande: Commande, status: string) {
+        commande.etat = status; // Mise à jour locale
+        this.commandeService.changeStatus(commande._id, status).subscribe({
+            next: () => {
+                console.log(`Commande ${commande._id} mise à jour avec succès.`);
+            },
+            error: (err) => {
+                console.error(`Erreur lors de la mise à jour de la commande ${commande._id}:`, err);
+            }
         });
+    }
 
-        this.statuses = [
-            { label: 'Réparation', value: 'reparation' },
-            { label: 'Révision', value: 'revision' },
-            { label: 'Diagnostic', value: 'diagnostic' }
-        ];
-
-        this.cols = [
-            { field: 'code', header: 'Code', customExportHeader: 'Product Code' },
-            { field: 'name', header: 'Name' },
-            { field: 'price', header: 'Price' },
-            { field: 'category', header: 'Category' }
-        ];
-
-        this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
+    loadCommande() {
+        this.commandeService.getCommande().subscribe((data) => {
+            this.commandes = data;
+        });
     }
 
     getSeverity(status: string) {
@@ -211,4 +206,25 @@ export class Order implements OnInit {
                 return 'info';
         }
     }
+
+    /* loadDemoData() {
+        this.productService.getProducts().then((data) => {
+            this.products.set(data);
+        });
+
+        this.statuses = [
+            { label: 'Réparation', value: 'reparation' },
+            { label: 'Révision', value: 'revision' },
+            { label: 'Diagnostic', value: 'diagnostic' }
+        ];
+
+        this.cols = [
+            { field: 'code', header: 'Code', customExportHeader: 'Product Code' },
+            { field: 'name', header: 'Name' },
+            { field: 'price', header: 'Price' },
+            { field: 'category', header: 'Category' }
+        ];
+
+        this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
+    } */
 }

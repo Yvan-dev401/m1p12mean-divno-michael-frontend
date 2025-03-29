@@ -9,6 +9,7 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { TagModule } from 'primeng/tag';
 import { Product, ProductService } from '../service/product.service';
 import { StockService, Stock } from '../service/stock.service';
+import { CommandeService } from '../service/commande.service';
 import { DialogModule } from 'primeng/dialog';
 import { ToolbarModule } from 'primeng/toolbar';
 
@@ -71,7 +72,7 @@ import { ToolbarModule } from 'primeng/toolbar';
                                             <span class="text-xl font-semibold">Ar {{ stock.prixUnitaire }}</span>
                                             <div class="flex flex-row-reverse md:flex-row gap-2">
                                                 <!-- <p-button icon="pi pi-heart" styleClass="h-full" [outlined]="true"></p-button> -->
-                                                <p-button icon="pi pi-shopping-cart" label="Commander" (click)="order()" styleClass="flex-auto md:flex-initial whitespace-nowrap"></p-button>
+                                                <p-button icon="pi pi-shopping-cart" label="Commander" (click)="orderOpen(stock)" styleClass="flex-auto md:flex-initial whitespace-nowrap"></p-button>
                                             </div>
                                         </div>
                                     </div>
@@ -117,6 +118,7 @@ import { ToolbarModule } from 'primeng/toolbar';
                                         <div class="flex flex-col gap-6 mt-6">
                                             <span class="text-2xl font-semibold">Ar {{ stock.prixUnitaire }}</span>
                                             <div class="flex gap-2">
+                                                <p-button icon="pi pi-shopping-cart" label="Commander" (click)="orderOpen(stock)" styleClass="flex-auto md:flex-initial whitespace-nowrap"></p-button>
                                                 <!-- <p-button icon="pi pi-shopping-cart" label="Commander" (click)="order()" [disabled]="item.inventoryStatus === 'OUTOFSTOCK'" class="flex-auto whitespace-nowrap" styleClass="w-full"></p-button> -->
                                                 <!-- <p-button icon="pi pi-heart" styleClass="h-full" [outlined]="true"></p-button> -->
                                             </div>
@@ -138,19 +140,19 @@ import { ToolbarModule } from 'primeng/toolbar';
                     </div> -->
                     <div>
                         <label for="description" class="block font-bold mb-3">Nom pièce</label>
-                        <input type="text" id="description" class="block w-full p-2 border rounded" placeholder="Ex: Bougie" />
+                        <input type="text" id="description" class="block w-full p-2 border rounded" [(ngModel)]="namePiece" placeholder="Ex: Bougie" />
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Quantité</label>
-                        <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="Entrez un nombre" />
+                        <input type="number" id="description" class="block w-full p-2 border rounded" [(ngModel)]="quantity" placeholder="Entrez un nombre" />
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Prix</label>
-                        <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="5000 Ar" />
+                        <input type="number" id="description" class="block w-full p-2 border rounded" [(ngModel)]="price" placeholder="5000 Ar" />
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Main d'oeuvre</label>
-                        <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="5000 Ar" />
+                        <input type="number" id="description" class="block w-full p-2 border rounded" [(ngModel)]="main_d_oeuvre" placeholder="5000 Ar" />
                     </div>
                 </div>
             </ng-template>
@@ -164,23 +166,20 @@ import { ToolbarModule } from 'primeng/toolbar';
         <p-dialog [(visible)]="orderDialog" [style]="{ width: '450px' }" header="Commande de pièce" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
-                    <!-- <div>
-                        <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
-                    </div> -->
                     <div>
                         <label for="description" class="block font-bold mb-3">Pièce</label>
-                        Marque et modèle, Année de mise en circulation, Kilométrage actuel
+                        <span>{{ selectedStock?.nomPiece }}</span>
                     </div>
                     <div>
                         <label for="description" class="block font-bold mb-3">Quantité</label>
-                        <input type="number" id="description" class="block w-full p-2 border rounded" placeholder="Entrez un nombre" />
+                        <input type="number" id="description" class="block w-full p-2 border rounded" [(ngModel)]="orderQuantity" placeholder="Entrez un nombre" />
                     </div>
                 </div>
             </ng-template>
 
             <ng-template #footer>
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Accepter" icon="pi pi-check" (click)="save()" />
+                <p-button icon="pi pi-shopping-cart" label="Commander" (click)="selectedStock && order(selectedStock._id)" styleClass="flex-auto md:flex-initial whitespace-nowrap"></p-button>
             </ng-template>
         </p-dialog>
     `,
@@ -203,22 +202,31 @@ export class Pieces {
     products: Product[] = [];
     stocks: Stock[] = [];
 
+    namePiece: string = '';
+    quantity: number = 0;
+    price: number = 0;
+    main_d_oeuvre: number = 0;
+    orderQuantity: number = 0;
+
     sourceCities: any[] = [];
 
     targetCities: any[] = [];
 
     orderCities: any[] = [];
 
+    selectedStock: Stock | null = null;
+
     constructor(
         private productService: ProductService,
-        private stockService: StockService
+        private stockService: StockService,
+        private commandeService: CommandeService
     ) {}
 
     ngOnInit() {
         this.productService.getProductsSmall().then((data) => (this.products = data.slice(0, 6)));
         this.listStocks();
 
-        this.sourceCities = [
+        /* this.sourceCities = [
             { name: 'San Francisco', code: 'SF' },
             { name: 'London', code: 'LDN' },
             { name: 'Paris', code: 'PRS' },
@@ -238,28 +246,53 @@ export class Pieces {
             { name: 'Berlin', code: 'BRL' },
             { name: 'Barcelona', code: 'BRC' },
             { name: 'Rome', code: 'RM' }
-        ];
+        ]; */
     }
 
     listStocks() {
         this.stockService.getStock().subscribe((data) => (this.stocks = data));
     }
-
-    order() {
-        this.orderDialog = true;
-    }
-
     newPiece() {
         this.newPieceDialog = true;
     }
 
+    orderOpen(stock: Stock) {
+        this.selectedStock = stock;
+        this.orderDialog = true;
+    }
+
     save() {
-        this.orderDialog = false;
+        this.stockService
+            .insertStock({
+                nomPiece: this.namePiece,
+                quantiteDisponible: this.quantity,
+                prixUnitaire: this.price,
+                main_d_oeuvre: this.main_d_oeuvre
+            })
+            .subscribe(() => {
+                this.listStocks();
+                this.newPieceDialog = false;
+            });
+    }
+
+    order(idStock: string) {
+        this.commandeService
+            .insertCommande({
+                idStock: idStock,
+                orderQuantite: this.orderQuantity,
+                nomPiece: this.selectedStock?.nomPiece || '',
+            })
+            .subscribe(() => {
+                this.orderDialog = false;
+                this.listStocks();
+                console.log('Commande passée avec succès');
+            });
     }
 
     hideDialog() {
         this.orderDialog = false;
         this.newPieceDialog = false;
+        this.selectedStock = null;
     }
 
     getSeverity(product: Product) {
