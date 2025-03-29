@@ -24,6 +24,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { ReparationService, Reparation } from '../service/reparation.service';
 import { StockService, Stock } from '../service/stock.service';
 import { DevisService, Devis } from '../service/devis.service';
+import { SortieSevice, Sortie } from '../service/sortie.service';
 import { AutoComplete } from 'primeng/autocomplete';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../services/user/auth.service';
@@ -139,14 +140,14 @@ interface AutoCompleteCompleteEvent {
                     </td> -->
                     <td style="min-width: 16rem">{{ reparation.dateDebut }}</td>
                     <!-- <td>{{ product.price | currency: 'USD' }}</td> -->
-                    <td>{{ reparation.mecanicienId }}</td>
-                    <td>{{ reparation.etat }}</td>
+                    <td>{{ reparation.marque }}{{ ' ' }}{{ reparation.modele }}</td>
+                    <td>{{ reparation.descriptionProbleme }}</td>
                     <td><p-progressBar [value]="20"></p-progressBar></td>
                     <td>
                         <p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat))" />
                     </td>
                     <td>
-                        {{ reparation.etat }}
+                        {{ reparation.nom ? reparation.nom : 'Non assigné' }}
                     </td>
                     <td>
                         <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="interventionOpen(reparation)" />
@@ -236,7 +237,7 @@ interface AutoCompleteCompleteEvent {
 
             <ng-template #footer>
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Terminer" icon="pi pi-check" (click)="hideDialog()" [disabled]="areTasksExceedingStock()" />
+                <p-button label="Terminer" icon="pi pi-check" (click)="updateInterventionStatus(reparation)" [disabled]="areTasksExceedingStock()" />
             </ng-template>
         </p-dialog>
 
@@ -264,9 +265,11 @@ export class Dashboard implements OnInit {
 
     // Service
     stocks: any[] | undefined;
+
     selectedReparations: any[] = [];
     selectedStock: any;
     selecedDevis: any;
+    selectedSortie: any;
 
     // Variables
     reparations: Reparation[] = [];
@@ -296,12 +299,13 @@ export class Dashboard implements OnInit {
         private stockService: StockService,
         private reparationService: ReparationService,
         private devisService: DevisService,
+        private sortieService: SortieSevice,
         private authService: AuthService
     ) {}
 
     ngOnInit() {
         // this.loadDemoData();
-        this.token = this.authService.getToken();
+        // this.token = this.authService.getToken();
         this.stockService.getStock().subscribe((stocks) => {
             this.stocks = stocks;
         });
@@ -435,8 +439,10 @@ export class Dashboard implements OnInit {
             (response) => {
                 console.log('Réponse :', response);
                 // this.hideDialog();
+
+                const token = this.authService.getToken();
                 const updateData = {
-                    mecanicienId: this.token
+                    mecanicienId: token.id
                 };
 
                 this.reparationService.updateReparation(this.reparation._id, updateData).subscribe(
@@ -459,22 +465,30 @@ export class Dashboard implements OnInit {
     }
 
     updateInterventionStatus(reparation: Reparation) {
-        const updateData = {
-            etat: 'Terminé'
-        };
+        // Appeler getSortieById avec l'ID de la réparation
+        this.sortieService.getSortieById(reparation._id).subscribe(
+            (sortie) => {
+                // console.log('Sortie récupérée avec succès :', sortie);
+                this.taskDialog = false; 
+                this.loadReparations();
+            },
+            (error) => {
+                console.error('Erreur lors de la récupération de la sortie :', error);
+            }
+        );
     }
 
     getSeverity(status: string) {
         switch (status) {
-            case 'en cours':
+            case 'En cours':
                 return 'blue';
-            case 'terminé':
+            case 'Terminé':
                 return 'green';
-            case 'en attente':
+            case 'En attente':
                 return 'yellow';
-            case 'annulé':
+            case 'Annulé':
                 return 'red';
-            case 'prêt':
+            case 'Prêt':
                 return 'orange';
             default:
                 return 'info';
