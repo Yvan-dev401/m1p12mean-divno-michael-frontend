@@ -84,6 +84,10 @@ interface ExportColumn {
             <ng-template #header>
                 <tr>
                     <th pSortableColumn="category" style="min-width:10rem">
+                        Date et heure
+                        <p-sortIcon field="category" />
+                    </th>
+                    <th pSortableColumn="category" style="min-width:10rem">
                         Pièces
                         <p-sortIcon field="category" />
                     </th>
@@ -102,12 +106,13 @@ interface ExportColumn {
             <!-- Contenu table -->
             <ng-template #body let-commande>
                 <tr>
+                    <td>{{ commande.date }}</td>
                     <td>{{ commande.nomPiece }}</td>
                     <td>{{ commande.orderQuantite }}</td>
                     <td>
-                        <p-tag [value]="commande.etat" [severity]="mapSeverity(getSeverity(commande.etat))" (click)="op.toggle($event)" />
-                        <p-overlayPanel #op>
-                            <!-- <div class="status-option" (click)="changeStatus(commande, 'En attente'); op.hide()">En attente</div> -->
+                        <p-tag [value]="commande.etat" [severity]="mapSeverity(getSeverity(commande.etat))" (click)="!isDelivered(commande.etat) && op.toggle($event)" />
+                        <p-overlayPanel #op *ngIf="!isDelivered(commande.etat)">
+                            <!-- Afficher les options de statut uniquement si l'état n'est pas "Livré" -->
                             <div class="status-option" (click)="changeStatus(commande, 'Livré'); op.hide()">Livré</div>
                         </p-overlayPanel>
                     </td>
@@ -148,6 +153,7 @@ export class Order implements OnInit {
     statuses!: any[];
 
     @ViewChild('dt') dt!: Table;
+    @ViewChild('op') op!: any; // Add ViewChild for the overlay panel
 
     exportColumns!: ExportColumn[];
 
@@ -159,19 +165,24 @@ export class Order implements OnInit {
     selectedCommande!: Commande[] | null;
     commandeStatuses!: any[];
 
-    constructor(
-        private commandeService: CommandeService,
-    ) {}
+    constructor(private commandeService: CommandeService) {}
 
     ngOnInit() {
         this.loadCommande();
     }
 
-        changeStatus(commande: Commande, status: string) {
+    loadCommande() {
+        this.commandeService.getCommande().subscribe((data) => {
+            this.commandes = data;
+        });
+    }
+
+    changeStatus(commande: Commande, status: string) {
         commande.etat = status; // Mise à jour locale
         this.commandeService.changeStatus(commande._id, status).subscribe({
             next: () => {
                 console.log(`Commande ${commande._id} mise à jour avec succès.`);
+                this.loadCommande();
             },
             error: (err) => {
                 console.error(`Erreur lors de la mise à jour de la commande ${commande._id}:`, err);
@@ -179,10 +190,8 @@ export class Order implements OnInit {
         });
     }
 
-    loadCommande() {
-        this.commandeService.getCommande().subscribe((data) => {
-            this.commandes = data;
-        });
+    isDelivered(etat: string): boolean {
+        return etat === 'Livré';
     }
 
     getSeverity(status: string) {
