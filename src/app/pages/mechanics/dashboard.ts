@@ -142,7 +142,7 @@ interface AutoCompleteCompleteEvent {
                     <!-- <td>{{ product.price | currency: 'USD' }}</td> -->
                     <td>{{ reparation.marque }}{{ ' ' }}{{ reparation.modele }}</td>
                     <td>{{ reparation.descriptionProbleme }}</td>
-                    <td><p-progressBar [value]="20"></p-progressBar></td>
+                    <td><p-progressBar [value]="reparation.progression"></p-progressBar></td>
                     <td>
                         <p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat))" />
                     </td>
