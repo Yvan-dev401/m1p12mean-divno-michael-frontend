@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Table, TableModule } from 'primeng/table';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
@@ -72,7 +72,7 @@ interface ExportColumn {
             [(selection)]="selectedProducts"
             [rowHover]="true"
             dataKey="id"
-            currentPageReportTemplate="Affichage {first} de {last} à {totalRecords} intervention"
+            currentPageReportTemplate="Affichage {first} de {last} à {totalRecords} commande"
             [showCurrentPageReport]="true"
             [rowsPerPageOptions]="[10, 20, 30]"
         >
@@ -89,15 +89,12 @@ interface ExportColumn {
                     </th>
                     <th pSortableColumn="category" style="min-width:10rem">
                         Pièces
-                        <p-sortIcon field="category" />
                     </th>
                     <th pSortableColumn="rating" style="min-width: 12rem">
                         Quantité
-                        <p-sortIcon field="rating" />
                     </th>
                     <th pSortableColumn="inventoryStatus" style="min-width: 12rem">
                         État
-                        <p-sortIcon field="inventoryStatus" />
                     </th>
                     <th style="min-width: 12rem"></th>
                 </tr>
@@ -106,7 +103,7 @@ interface ExportColumn {
             <!-- Contenu table -->
             <ng-template #body let-commande>
                 <tr>
-                    <td>{{ commande.date }}</td>
+                    <td>{{ commande.date | date: 'dd-MM-yyyy HH:mm' }}</td>
                     <td>{{ commande.nomPiece }}</td>
                     <td>{{ commande.orderQuantite }}</td>
                     <td>
@@ -139,7 +136,7 @@ interface ExportColumn {
 
         <p-confirmdialog [style]="{ width: '450px' }" />
     `,
-    providers: [MessageService, ProductService, ConfirmationService]
+    providers: [DatePipe, MessageService, ProductService, ConfirmationService]
 })
 export class Order implements OnInit {
     productDialog: boolean = false;

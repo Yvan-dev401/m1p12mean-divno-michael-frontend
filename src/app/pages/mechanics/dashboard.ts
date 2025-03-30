@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Table, TableModule } from 'primeng/table';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
@@ -138,7 +138,7 @@ interface AutoCompleteCompleteEvent {
                     <!-- <td style="width: 3rem">
                         <p-tableCheckbox [value]="product" />
                     </td> -->
-                    <td style="min-width: 16rem">{{ reparation.dateDebut }}</td>
+                    <td style="min-width: 16rem">{{ reparation.dateDebut | date: 'dd-MM-yyyy HH:mm' }}</td>
                     <!-- <td>{{ product.price | currency: 'USD' }}</td> -->
                     <td>{{ reparation.marque }}{{ ' ' }}{{ reparation.modele }}</td>
                     <td>{{ reparation.descriptionProbleme }}</td>
@@ -243,7 +243,7 @@ interface AutoCompleteCompleteEvent {
 
         <p-confirmdialog [style]="{ width: '450px' }" />
     `,
-    providers: [MessageService, ConfirmationService, StockService, ReparationService, DevisService],
+    providers: [MessageService, ConfirmationService, StockService, ReparationService, DevisService, DatePipe],
     styles: [
         `
             ::ng-deep .custom-autocomplete .p-autocomplete-input {
@@ -469,7 +469,7 @@ export class Dashboard implements OnInit {
         this.sortieService.getSortieById(reparation._id).subscribe(
             (sortie) => {
                 // console.log('Sortie récupérée avec succès :', sortie);
-                this.taskDialog = false; 
+                this.taskDialog = false;
                 this.loadReparations();
             },
             (error) => {
