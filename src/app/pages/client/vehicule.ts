@@ -19,7 +19,8 @@ import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ProgressBarModule } from 'primeng/progressbar';
-import { Vehicule,VehiculeService } from '../../services/vehicule/vehicule.service';
+import { Vehicule, VehiculeService } from '../../services/vehicule/vehicule.service';
+import { AuthService } from '../../services/user/auth.service';
 
 interface Column {
     field: string;
@@ -133,7 +134,7 @@ interface ExportColumn {
                     </td>
                     <td>
                         <!-- <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="detailVehicule(product)" /> -->
-                        <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="updateVehicule()" />
+                        <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="openUpdate(vehicule)" />
                     </td>
                 </tr>
             </ng-template>
@@ -144,24 +145,24 @@ interface ExportColumn {
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
-                        <label for="inventoryStatus" class="block font-bold mb-3">Marque</label>
-                        <input type="text" pInputText id="name" [(ngModel)]="vehicule.marque" required autofocus fluid />
+                        <label class="block font-bold mb-3">Marque</label>
+                        <input type="text" pInputText id="name" [(ngModel)]="newVehi.marque" fluid />
                     </div>
                     <div>
-                        <label for="inventoryStatus" class="block font-bold mb-3">Modele</label>
-                        <input type="text" pInputText id="name" [(ngModel)]="vehicule.modele" required autofocus fluid />
+                        <label class="block font-bold mb-3">Modele</label>
+                        <input type="text" pInputText id="modele" [(ngModel)]="newVehi.modele" fluid />
                     </div>
                     <div>
-                        <label for="inventoryStatus" class="block font-bold mb-3">Annee de sortie</label>
-                        <input type="text" pInputText id="name" [(ngModel)]="vehicule.annee" required autofocus fluid />
+                        <label class="block font-bold mb-3">Annee de sortie</label>
+                        <input type="text" pInputText id="annee" [(ngModel)]="newVehi.annee" fluid />
                     </div>
                     <div>
-                        <label for="inventoryStatus" class="block font-bold mb-3">Kilometrage</label>
-                        <input type="text" pInputText id="name" [(ngModel)]="vehicule.kilometrage" required autofocus fluid />
+                        <label class="block font-bold mb-3">Kilometrage</label>
+                        <input type="text" pInputText id="kilometrage" [(ngModel)]="newVehi.kilometrage" fluid />
                     </div>
                     <div>
-                        <label for="inventoryStatus" class="block font-bold mb-3">Plaque d'immatriculation</label>
-                        <input type="text" pInputText id="name" [(ngModel)]="vehicule.plaqueImmatriculation" required autofocus fluid />
+                        <label class="block font-bold mb-3">Plaque d'immatriculation</label>
+                        <input type="text" pInputText id="plaqueImmatriculation" [(ngModel)]="newVehi.plaqueImmatriculation" fluid />
                     </div>
                     <!-- <div>
                         <label for="description" class="block font-bold mb-3">Description de la voiture</label>
@@ -174,19 +175,48 @@ interface ExportColumn {
                     </div> -->
                 </div>
             </ng-template>
-
             <ng-template #footer>
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
                 <p-button label="Enregistrer" icon="pi pi-check" (click)="saveVehicule()" />
             </ng-template>
         </p-dialog>
 
-        <!-- <p-dialog [(visible)]="updateDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
+            <p-dialog [(visible)]="updateVehiculeD" [style]="{ width: '450px' }" header="Modifier voiture" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
-                    <div>
-                        <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
+                <div>
+                        <label class="block font-bold mb-3">Marque</label>
+                        <input type="text" pInputText id="name" [(ngModel)]="updateVehi.marque" fluid />
                     </div>
+                    <div>
+                        <label class="block font-bold mb-3">Modele</label>
+                        <input type="text" pInputText id="modele" [(ngModel)]="updateVehi.modele" fluid />
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-3">Annee de sortie</label>
+                        <input type="text" pInputText id="annee" [(ngModel)]="updateVehi.annee" fluid />
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-3">Kilometrage</label>
+                        <input type="text" pInputText id="kilometrage" [(ngModel)]="updateVehi.kilometrage" fluid />
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-3">Plaque d'immatriculation</label>
+                        <input type="text" pInputText id="plaqueImmatriculation" [(ngModel)]="updateVehi.plaqueImmatriculation" fluid />
+                    </div>
+                </div>
+            </ng-template>
+
+
+            <ng-template #footer>
+                <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
+                <p-button label="Modifier" icon="pi pi-check" (click)="updateVehicule()" />
+            </ng-template>
+        </p-dialog>
+
+        <!-- <p-dialog [(visible)]="updateVehiculeD" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
+            <ng-template #content>
+                <div class="flex flex-col gap-6">
                     <div>
                         <label for="description" class="block font-bold mb-3">Description</label>
                         Marque et modèle, Année de mise en circulation, Kilométrage actuel
@@ -215,15 +245,35 @@ interface ExportColumn {
 export class ListeVehicule implements OnInit {
     newVehicule: boolean = false;
     detailDialog: boolean = false;
-    updateDialog: boolean = false;
+    updateVehiculeD: boolean = false;
 
     // products = signal<Product[]>([]);
+
+    _id: string = ''
+
+    updateVehi = {
+        marque: '',
+        modele: '',
+        annee: '',
+        kilometrage: '',
+        plaqueImmatriculation: ''
+    }
+
+
+    newVehi = {
+        id: '',
+        marque: '',
+        modele: '',
+        annee: '',
+        kilometrage: '',
+        plaqueImmatriculation: ''
+    }
 
     vehicules: Vehicule[] = [];
 
     vehicule!: Vehicule;
 
-    selectedVehicule!: Vehicule[] | null;
+    selectedVehicule!: Vehicule[];
 
     submitted: boolean = false;
 
@@ -238,17 +288,61 @@ export class ListeVehicule implements OnInit {
     constructor(
         private vehiculeService: VehiculeService,
         private messageService: MessageService,
-        private confirmationService: ConfirmationService
+        private confirmationService: ConfirmationService,
+        private authService: AuthService
     ) { }
 
     ngOnInit() {
         this.loadVehicules()
     }
 
+    saveVehicule() {
+        const token = this.authService.getToken()
+        this.newVehi = {
+            id: token.id,
+            marque: this.newVehi.marque,
+            modele: this.newVehi.modele,
+            annee: this.newVehi.annee,
+            kilometrage: this.newVehi.kilometrage,
+            plaqueImmatriculation: this.newVehi.plaqueImmatriculation
+        }
+
+        // console.log("ito",this.newVehi)
+        this.vehiculeService.setVehicule(this.newVehi).subscribe(
+            (response) => {
+                this.loadVehicules()
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Successful',
+                    detail: 'Vehicule Added',
+                    life: 3000
+                });
+            },
+            (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'erreur',
+                    detail: '',
+                    life: 3000
+                });
+            }
+        )
+
+        this.newVehi = {
+            id: '',
+            marque: '',
+            modele: '',
+            annee: '',
+            kilometrage: '',
+            plaqueImmatriculation: ''
+        }
+        this.newVehicule = false;
+    }
+
     loadVehicules() {
         this.vehiculeService.getVehicule().subscribe((data) => {
             this.vehicules = data;
-            console.log('Données de vehicules:', this.vehicules);
+            //console.log('Données de vehicules:', this.vehicules);
         });
     }
 
@@ -257,10 +351,25 @@ export class ListeVehicule implements OnInit {
     }
 
     openNew() {
-        this.vehicule = {};
-        this.submitted = false;
+        //this.vehicule = {};
         this.newVehicule = true;
     }
+
+    openUpdate(up:any) {
+        this._id = up._id
+        this.updateVehi = {
+            marque: up.marque,
+            modele: up.modele,
+            annee: up.annee,
+            kilometrage: up.kilometrage,
+            plaqueImmatriculation: up.plaqueImmatriculation
+        }
+    
+        console.log(this._id)
+        this.updateVehiculeD = true;
+    }
+
+
 
     deleteSelectedVehicule() {
         this.confirmationService.confirm({
@@ -268,16 +377,15 @@ export class ListeVehicule implements OnInit {
             header: 'Confirm',
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
-
-                // this.products.set(this.products().filter((val) => !this.selectedProducts?.includes(val)));
-                console.log(this.selectedVehicule)
-                this.selectedVehicule = null
+                this.vehiculeService.deleteVehicule(""+this.selectedVehicule[0]._id)
+                this.selectedVehicule = []
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Successful',
                     detail: 'Products Deleted',
                     life: 3000
                 });
+                this.loadVehicules()
             }
         });
     }
@@ -285,7 +393,7 @@ export class ListeVehicule implements OnInit {
     hideDialog() {
         this.newVehicule = false;
         this.detailDialog = false;
-        this.updateDialog = false;
+        this.updateVehiculeD = false;
         this.submitted = false;
     }
 
@@ -323,7 +431,34 @@ export class ListeVehicule implements OnInit {
         }
     }
 
-    saveVehicule() { }
+    updateVehicule() {
+        this.vehiculeService.updateVehicule(this._id,this.updateVehi).subscribe(
+            (response) => {
+                this.loadVehicules()
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Successful',
+                    detail: 'Vehicule Added',
+                    life: 3000
+                });
+            },
+            (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'erreur',
+                    detail: '',
+                    life: 3000
+                });
+            }
+        )
 
-    updateVehicule() { }
+        this.updateVehi = {
+            marque: '',
+            modele: '',
+            annee: '',
+            kilometrage: '',
+            plaqueImmatriculation: ''
+        }
+        this.updateVehiculeD = false;
+    }
 }

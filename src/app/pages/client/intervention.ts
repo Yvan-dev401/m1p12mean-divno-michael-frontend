@@ -22,6 +22,7 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { ReparationClService, ReparationCl } from '../../services/reparation/reparation.service';
 import { DevisService } from '../../services/devis/devis.service';
 import { response } from 'express';
+import { VehiculeService } from '../../services/vehicule/vehicule.service';
 
 interface Column {
     field: string;
@@ -304,6 +305,7 @@ export class Intervention implements OnInit {
     constructor(
         private reparationService: ReparationClService,
         private devisService: DevisService,
+        private vehiculeService: VehiculeService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
 
@@ -323,11 +325,20 @@ export class Intervention implements OnInit {
 
     ngOnInit() {
         this.loadReparations()
+        this.loadVehicules()
+        // this.vehiListe = [
+        //     { label: 'Mazda - BT50', value: '67d0002e360d5465cfade482' },
+        //     { label: 'Audi - RS6', value: '67d009fa8e4dcccf0023d4e6' }
+        // ];
+    }
 
-        this.vehiListe = [
-            { label: 'Mazda - BT50', value: '67d0002e360d5465cfade482' },
-            { label: 'Audi - RS6', value: '67d009fa8e4dcccf0023d4e6' }
-        ];
+    loadVehicules() {
+        // this.vehiculeService.getVehicule().subscribe((data) => {
+        //     this.vehiListe = data.map(d => {
+        //         "label" : d._id
+        //     });
+        //     console.log('Données', this.vehiListe);
+        // });
     }
 
     loadReparations() {
