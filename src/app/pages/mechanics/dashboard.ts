@@ -23,11 +23,12 @@ import { CheckboxModule } from 'primeng/checkbox';
 // import { Product, ProductService } from '../service/product.service';
 import { ReparationService, Reparation } from '../service/reparation.service';
 import { StockService, Stock } from '../service/stock.service';
-import { DevisService, Devis } from '../service/devis.service';
+import { DevisServices, Devis } from '../service/devis.service';
 import { SortieSevice, Sortie } from '../service/sortie.service';
 import { AutoComplete } from 'primeng/autocomplete';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../services/user/auth.service';
+import { DevisService } from '../../services/devis/devis.service';
 
 interface Column {
     field: string;
@@ -75,6 +76,7 @@ interface AutoCompleteCompleteEvent {
     ],
     template: `
         <div class="card">
+        <p-toast position="top-center"></p-toast>
         <p-table
             #dt
             [value]="reparations"
@@ -151,25 +153,59 @@ interface AutoCompleteCompleteEvent {
                         {{ reparation.nom ? reparation.nom : 'Non assigné' }}
                     </td>
                     <td>
-                        <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="interventionOpen(reparation)" />
-                        <p-button icon="pi pi-cog" severity="help" class="mr-2" [rounded]="true" [outlined]="true" (click)="listPiece(reparation)" />
+                        <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="detailIntervention(reparation,reparation._id,reparation.marque,reparation.modele)" />
+                        <p-button icon="pi pi-cog" severity="help" class="mr-2" [disabled]=" reparation.etat == 'en cours' || reparation.etat == 'Términé'" [rounded]="true" [outlined]="true"  (click)="listPiece(reparation)" />
                         <p-button icon="pi pi-check" class="mr-2" [rounded]="true" [outlined]="true" (click)="taskProduct(reparation)" />
                     </td>
                 </tr>
             </ng-template>
         </p-table>
 
-        <p-dialog [(visible)]="interventionDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
+        <p-dialog [(visible)]="interventionDialog" [style]="{ width: '450px' }" header="Intervention" [modal]="true">
             <ng-template #content>
-                <div class="flex flex-col gap-6">
-                    <div>
-                        <label for="description" class="block font-bold mb-3"><p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat || ''))" /></label>
-                    </div>
-                    <div>
-                        <label for="description" class="block font-bold mb-3">Description</label>
-                        {{ reparation.descriptionProbleme }}
-                    </div>
-                </div>
+            <div class="flex flex-col gap-6">
+            <div>
+                <label for="description" class="block font-bold mb-3">
+                    <p-tag [value]="reparation.etat" [severity]="mapSeverity(getSeverity(reparation.etat || ''))" />
+                </label>
+            </div>
+            <div>
+                <label for="description" class="block font-bold mb-3">Vehicule</label>
+            {{marque}} | {{modele}}
+            </div>
+            <div>
+                <label for="description" class="block font-bold mb-3">Description</label>
+                <ul>Probleme : {{reparation.descriptionProbleme}}</ul>
+            </div>
+            <div>
+                <!-- <label for="description" class="block font-bold mb-3">Détails</label> -->
+                <p-table
+                    [value]="details">
+                <ng-template #header>
+                <tr>
+                    <th>Piece</th>
+                    <th>Qté</th>
+                    <th>PU</th>
+                    <th>MO</th>
+                    <th>Total</th>
+                </tr>
+                </ng-template>
+                <ng-template #body let-detail>
+                <tr>
+                    <td>{{ detail.nomPiece }}</td>
+                    <td>{{ detail.quantite }}</td>
+                    <td>{{ detail.prixUnitaire }} Ar</td>
+                    <td>{{ detail.main_d_oeuvre }} Ar</td>
+                    <td>{{ (detail.quantite * detail.prixUnitaire) + detail.main_d_oeuvre }} Ar</td>
+                </tr>
+                </ng-template>
+                </p-table>
+            </div>
+            <div>
+                <label for="description" class="block font-bold mb-3">Devis</label>
+                Total : {{ total }} €
+            </div>
+        </div>
             </ng-template>
 
             <ng-template #footer>
@@ -245,7 +281,7 @@ interface AutoCompleteCompleteEvent {
         <p-confirmdialog [style]="{ width: '450px' }" />
         </div>
     `,
-    providers: [MessageService, ConfirmationService, StockService, ReparationService, DevisService, DatePipe],
+    providers: [MessageService, ConfirmationService, StockService, ReparationService, DevisServices, DatePipe],
     styles: [
         `
             ::ng-deep .custom-autocomplete .p-autocomplete-input {
@@ -265,6 +301,10 @@ export class Dashboard implements OnInit {
     taskDialog: boolean = false;
     pieceDialog: boolean = false;
 
+    total: any = {}
+
+    details: any = []
+
     // Service
     stocks: any[] | undefined;
 
@@ -273,9 +313,16 @@ export class Dashboard implements OnInit {
     selecedDevis: any;
     selectedSortie: any;
 
+    marque: string = ""
+
+    modele: string = ""
+
+
     // Variables
     reparations: Reparation[] = [];
     reparation!: Reparation;
+
+    // newRep: Reparation[] = []
 
     quantity: number = 0;
     // tasks: { name: string; completed: boolean }[] = [];
@@ -300,10 +347,22 @@ export class Dashboard implements OnInit {
     constructor(
         private stockService: StockService,
         private reparationService: ReparationService,
-        private devisService: DevisService,
+        private devisServices: DevisServices,
         private sortieService: SortieSevice,
-        private authService: AuthService
-    ) {}
+        private authService: AuthService,
+        private messageService: MessageService,
+        private devisService: DevisService
+
+    ) { }
+
+    setMarque(id: string) {
+        this.marque = id
+    }
+
+    setModele(id: string) {
+        this.modele = id
+    }
+
 
     ngOnInit() {
         // this.loadDemoData();
@@ -317,6 +376,19 @@ export class Dashboard implements OnInit {
         this.loadReparations();
     }
 
+    detailIntervention(rep: Reparation, id: string, mr: string, md: string) {
+        console.log("id", id)
+        this.devisService.getDevis(id).subscribe((data) => {
+            this.details = data.details
+            this.total = data.total
+            console.log("devis", this.details)
+        })
+        this.setMarque(mr)
+        this.setModele(md)
+        this.reparation = { ...rep };
+        this.interventionDialog = true;
+    }
+
     loadReparations() {
         this.reparationService.getReparations().subscribe((data) => {
             this.reparations = data;
@@ -324,7 +396,7 @@ export class Dashboard implements OnInit {
     }
 
     loadTasks() {
-        this.devisService.getDevis().subscribe(
+        this.devisServices.getDevis().subscribe(
             (devis) => {
                 const selectedDevis = devis.filter((d) => {
                     const reparationIdDevis = d.reparationId.toString().trim();
@@ -370,9 +442,10 @@ export class Dashboard implements OnInit {
             quantite: task.quantite
         };
 
-        this.devisService.updateDevis(_id, updateData).subscribe(
+        this.devisServices.updateDevis(_id, updateData).subscribe(
             (response) => {
                 console.log('Mise à jour réussie :', response);
+                this.loadReparations()
             },
             (error) => {
                 console.error('Erreur lors de la mise à jour :', error);
@@ -437,20 +510,28 @@ export class Dashboard implements OnInit {
             etat: false
         }));
 
-        this.devisService.insert(itemsToSave).subscribe(
+        this.devisServices.insert(itemsToSave).subscribe(
             (response) => {
                 console.log('Réponse :', response);
                 // this.hideDialog();
 
                 const token = this.authService.getToken();
                 const updateData = {
-                    mecanicienId: token.id
+                    mecanicienId: token.id,
+                    etat: "en cours"
                 };
 
                 this.reparationService.updateReparation(this.reparation._id, updateData).subscribe(
                     (response) => {
+                        this.loadReparations();
                         console.log('Intervention mise à jour avec succès :', response);
-                        this.loadReparations(); // Recharger les interventions après la mise à jour
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Réussie',
+                            detail: 'Devis ajouté',
+                            life: 3000
+                        });
+                        // Recharger les interventions après la mise à jour
                     },
                     (error) => {
                         console.log(updateData);
@@ -458,7 +539,10 @@ export class Dashboard implements OnInit {
                     }
                 );
 
-                window.location.reload();
+                this.pieceDialog = false;
+                console.log(this.reparation)
+                // this.interventionOpen(this.reparation)
+                // window.location.reload();
             },
             (error) => {
                 console.error('Erreur :', error);
