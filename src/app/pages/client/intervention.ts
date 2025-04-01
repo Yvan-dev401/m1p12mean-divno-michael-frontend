@@ -23,6 +23,8 @@ import { ReparationClService, ReparationCl } from '../../services/reparation/rep
 import { DevisService } from '../../services/devis/devis.service';
 import { response } from 'express';
 import { VehiculeService } from '../../services/vehicule/vehicule.service';
+import { AuthService } from '../../services/user/auth.service';
+import { PaiementService } from '../../services/paiement/paiement.service';
 
 interface Column {
     field: string;
@@ -244,7 +246,7 @@ interface ExportColumn {
 
     <ng-template #footer> 
         <p-button label="Refuser" [disabled]="details.length==0 || reparation.etat == 'en cours' || reparation.etat == 'annulé'" icon="pi pi-times" (click)="refuserDevis(repId, updateAnnule)" />
-        <p-button label="Accepter" [disabled]="details.length==0 || reparation.etat == 'en cours' || reparation.etat == 'annulé'" icon="pi pi-check" (click)="acceptDevis(repId, updateEnCours)" />
+        <p-button label="Payer" [disabled]="details.length==0 || reparation.etat == 'en cours' || reparation.etat == 'annulé'" icon="pi pi-check" (click)="acceptDevis(repId, updateEnCours,total)" />
     </ng-template>
 </p-dialog>
 
@@ -282,6 +284,15 @@ export class Intervention implements OnInit {
 
     modele: string = ""
 
+    montant: string = ""
+
+    newPaiement = {
+        montant: 0,
+        date: '',
+        reparationId: '',
+        clientId: '',
+    }
+
     reparations: ReparationCl[] = []
 
     total: any = {}
@@ -307,12 +318,18 @@ export class Intervention implements OnInit {
         private devisService: DevisService,
         private vehiculeService: VehiculeService,
         private messageService: MessageService,
-        private confirmationService: ConfirmationService
+        private confirmationService: ConfirmationService,
+        private authService: AuthService,
+        private paiementService: PaiementService
 
     ) { }
 
     setRepId(id: string) {
         this.repId = id
+    }
+
+    setMontant(montant: string) {
+        this.montant = montant
     }
 
     setMarque(id: string) {
@@ -365,7 +382,7 @@ export class Intervention implements OnInit {
         this.newInterventionDialog = true;
     }
 
-    detailIntervention(rep: ReparationCl,id: string, mr:string, md:string) {
+    detailIntervention(rep: ReparationCl, id: string, mr: string, md: string) {
         console.log("id", id)
         this.devisService.getDevis(id).subscribe((data) => {
             this.details = data.details
@@ -437,11 +454,27 @@ export class Intervention implements OnInit {
         this.newInterventionDialog = false;
     }
 
-    acceptDevis(id: string, update: any) {
+    acceptDevis(id: string, update: any, montant:number) {
         console.log(id, update)
-        this.reparationService.updateReparation(id,update).subscribe(
+        const token = this.authService.getToken()
+        this.newPaiement = {
+            montant: montant,
+            date: new Date().toISOString(),
+            reparationId: id,
+            clientId: token.id,
+        }
+
+        this.paiementService.setPaiement(this.newPaiement).subscribe(
             (response) => {
-                this.repId=""
+                console.log(response)
+            },
+            (error) => {
+            }
+        )
+
+        this.reparationService.updateReparation(id, update).subscribe(
+            (response) => {
+                this.repId = ""
                 this.loadReparations()
                 this.messageService.add({
                     severity: 'success',
@@ -459,15 +492,15 @@ export class Intervention implements OnInit {
                 });
             }
         )
-        // this.repId=""
+        this.repId=""
         this.hideDialog()
     }
 
     refuserDevis(id: string, update: any) {
         console.log(id, update)
-        this.reparationService.updateReparation(id,update).subscribe(
+        this.reparationService.updateReparation(id, update).subscribe(
             (response) => {
-                this.repId=""
+                this.repId = ""
                 this.loadReparations()
                 this.messageService.add({
                     severity: 'success',
