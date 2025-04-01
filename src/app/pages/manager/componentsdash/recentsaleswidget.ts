@@ -2,9 +2,8 @@ import { Component } from '@angular/core';
 import { RippleModule } from 'primeng/ripple';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
-import { Product, ProductService } from '../../service/product.service';
 import { ReparationService, Reparation } from '../../service/reparation.service';
 
 @Component({
@@ -18,16 +17,16 @@ import { ReparationService, Reparation } from '../../service/reparation.service'
         <p-table [value]="reparations" [paginator]="true" [rows]="10" responsiveLayout="scroll">
             <ng-template #header>
                 <tr>
-                    <th pSortableColumn="name">Date <p-sortIcon field="name"></p-sortIcon></th>
-                    <th pSortableColumn="price">Mécanicien <p-sortIcon field="price"></p-sortIcon></th>
-                    <th pSortableColumn="price">Intervention <p-sortIcon field="price"></p-sortIcon></th>
+                    <th pSortableColumn="name">Date</th>
+                    <th pSortableColumn="price">Mécanicien</th>
+                    <th pSortableColumn="price">Intervention</th>
                     <th>Action</th>
                 </tr>
             </ng-template>
             <ng-template #body let-reparation>
                 <tr>
-                    <td style="width: 35%; min-width: 7rem;">{{ reparation.dateDebut }}</td>
-                    <td style="width: 35%; min-width: 8rem;">{{ reparation.mecanicienId }}</td>
+                    <td style="width: 35%; min-width: 7rem;">{{ reparation.dateDebut | date: 'dd-MM-yyyy HH:mm' }}</td>
+                    <td style="width: 35%; min-width: 8rem;">{{ reparation.nom ? reparation.nom : 'Non assigné' }}</td>
                     <td style="width: 35%; min-width: 8rem;">{{ reparation.etat }}</td>
                     <td style="width: 15%;">
                         <button pButton pRipple type="button" icon="pi pi-eye" class="p-button p-component p-button-text p-button-icon-only" (click)="interventionOpen(reparation)"></button>
@@ -62,24 +61,19 @@ import { ReparationService, Reparation } from '../../service/reparation.service'
             </ng-template>
         </p-dialog>
     </div>`,
-    providers: [ProductService]
+    providers: [DatePipe]
 })
 export class RecentSalesWidget {
     productDialog: boolean = false;
-    products!: Product[];
     reparations: Reparation[] = [];
     reparation!: Reparation;
 
     interventionDialog: boolean = false;
     submitted: boolean = false;
 
-    constructor(
-        private productService: ProductService,
-        private reparationService: ReparationService
-    ) {}
+    constructor(private reparationService: ReparationService) {}
 
     ngOnInit() {
-        this.productService.getProductsSmall().then((data) => (this.products = data));
         this.loadReparations();
     }
 
