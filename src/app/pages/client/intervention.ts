@@ -63,6 +63,7 @@ interface ExportColumn {
         ConfirmDialogModule
     ],
     template: `
+    <p-toast position="top-center"></p-toast>
         <p-toolbar styleClass="mb-6">
             <ng-template #start>
                 <p-button label="Nouveau intervention" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
@@ -478,8 +479,8 @@ export class Intervention implements OnInit {
                 this.loadReparations()
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Intervention Added',
+                    summary: 'Réussie',
+                    detail: 'Intervention modifié',
                     life: 3000
                 });
             },
@@ -504,8 +505,8 @@ export class Intervention implements OnInit {
                 this.loadReparations()
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Intervention Added',
+                    summary: 'Réussie',
+                    detail: 'Intervention refuser',
                     life: 3000
                 });
             },

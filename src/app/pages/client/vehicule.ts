@@ -59,6 +59,8 @@ interface ExportColumn {
         ConfirmDialogModule
     ],
     template: `
+
+<p-toast position="top-center"></p-toast>
         <p-toolbar styleClass="mb-6">
             <ng-template #start>
                 <p-button label="Nouvelle véhicule" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
@@ -313,8 +315,8 @@ export class ListeVehicule implements OnInit {
                 this.loadVehicules()
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Vehicule Added',
+                    summary: 'Réussie',
+                    detail: 'Vehicule ajouté avec succès',
                     life: 3000
                 });
             },
@@ -355,7 +357,7 @@ export class ListeVehicule implements OnInit {
         this.newVehicule = true;
     }
 
-    openUpdate(up:any) {
+    openUpdate(up: any) {
         this._id = up._id
         this.updateVehi = {
             marque: up.marque,
@@ -364,7 +366,7 @@ export class ListeVehicule implements OnInit {
             kilometrage: up.kilometrage,
             plaqueImmatriculation: up.plaqueImmatriculation
         }
-    
+
         console.log(this._id)
         this.updateVehiculeD = true;
     }
@@ -377,12 +379,12 @@ export class ListeVehicule implements OnInit {
             header: 'Confirm',
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
-                this.vehiculeService.deleteVehicule(""+this.selectedVehicule[0]._id)
+                this.vehiculeService.deleteVehicule("" + this.selectedVehicule[0]._id)
                 this.selectedVehicule = []
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Products Deleted',
+                    summary: 'Réussie',
+                    detail: 'Vehicule supprimé avec succès',
                     life: 3000
                 });
                 this.loadVehicules()
@@ -432,13 +434,13 @@ export class ListeVehicule implements OnInit {
     }
 
     updateVehicule() {
-        this.vehiculeService.updateVehicule(this._id,this.updateVehi).subscribe(
+        this.vehiculeService.updateVehicule(this._id, this.updateVehi).subscribe(
             (response) => {
                 this.loadVehicules()
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Vehicule Added',
+                    summary: 'Réussie',
+                    detail: 'Vehicule modifié avec succès',
                     life: 3000
                 });
             },
