@@ -74,6 +74,7 @@ interface AutoCompleteCompleteEvent {
         HttpClientModule
     ],
     template: `
+        <div class="card">
         <p-table
             #dt
             [value]="reparations"
@@ -242,6 +243,7 @@ interface AutoCompleteCompleteEvent {
         </p-dialog>
 
         <p-confirmdialog [style]="{ width: '450px' }" />
+        </div>
     `,
     providers: [MessageService, ConfirmationService, StockService, ReparationService, DevisService, DatePipe],
     styles: [
@@ -480,15 +482,15 @@ export class Dashboard implements OnInit {
 
     getSeverity(status: string) {
         switch (status) {
-            case 'En cours':
+            case 'en cours':
                 return 'blue';
-            case 'Terminé':
+            case 'terminé':
                 return 'green';
-            case 'En attente':
+            case 'en attente':
                 return 'yellow';
-            case 'Annulé':
+            case 'annulé':
                 return 'red';
-            case 'Prêt':
+            case 'prêt':
                 return 'orange';
             default:
                 return 'info';
