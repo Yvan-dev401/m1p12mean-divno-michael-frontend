@@ -566,15 +566,15 @@ export class Dashboard implements OnInit {
 
     getSeverity(status: string) {
         switch (status) {
-            case 'en cours':
+            case 'En cours':
                 return 'blue';
-            case 'terminé':
+            case 'Terminé':
                 return 'green';
-            case 'en attente':
+            case 'En attente':
                 return 'yellow';
-            case 'annulé':
+            case 'Annulé':
                 return 'red';
-            case 'prêt':
+            case 'Prêt':
                 return 'orange';
             default:
                 return 'info';
