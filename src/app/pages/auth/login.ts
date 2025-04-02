@@ -99,7 +99,7 @@ export class Login {
                 this.authUser.password = 'password';
                 break;
             case 2:
-                this.authUser.username = 'rakoto';
+                this.authUser.username = 'rasoa';
                 this.authUser.password = 'password';
                 break;
             default:
