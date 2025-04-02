@@ -14,10 +14,11 @@ import { DialogModule } from 'primeng/dialog';
 import { ToolbarModule } from 'primeng/toolbar';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { FormatMontantPipe } from '../service/formattermontant.services';
 
 @Component({
     selector: 'app-pieces',
-    imports: [CommonModule, DataViewModule, FormsModule, SelectButtonModule, PickListModule, OrderListModule, TagModule, ButtonModule, DialogModule, ToolbarModule, IconFieldModule, InputIconModule],
+    imports: [CommonModule,FormatMontantPipe, DataViewModule, FormsModule, SelectButtonModule, PickListModule, OrderListModule, TagModule, ButtonModule, DialogModule, ToolbarModule, IconFieldModule, InputIconModule],
     template: `
         <p-toolbar styleClass="mb-6">
             <ng-template #start>
@@ -82,7 +83,7 @@ import { InputIconModule } from 'primeng/inputicon';
                                             </div> -->
                                         </div>
                                         <div class="flex flex-col md:items-end gap-8">
-                                            <span class="text-xl font-semibold">Ar {{ stock.prixUnitaire }}</span>
+                                            <span class="text-xl font-semibold">Ar {{ stock.prixUnitaire | formatMontant }}</span>
                                             <div class="flex flex-row-reverse md:flex-row gap-2">
                                                 <!-- <p-button icon="pi pi-heart" styleClass="h-full" [outlined]="true"></p-button> -->
                                                 <p-button icon="pi pi-shopping-cart" label="Commander" (click)="orderOpen(stock)" styleClass="flex-auto md:flex-initial whitespace-nowrap"></p-button>
@@ -129,7 +130,7 @@ import { InputIconModule } from 'primeng/inputicon';
                                             </div> -->
                                         </div>
                                         <div class="flex flex-col gap-6 mt-6">
-                                            <span class="text-2xl font-semibold">Ar {{ stock.prixUnitaire }}</span>
+                                            <span class="text-2xl font-semibold">Ar {{ stock.prixUnitaire | formatMontant }}</span>
                                             <div class="flex gap-2">
                                                 <p-button icon="pi pi-shopping-cart" label="Commander" (click)="orderOpen(stock)" styleClass="flex-auto md:flex-initial whitespace-nowrap"></p-button>
                                                 <!-- <p-button icon="pi pi-shopping-cart" label="Commander" (click)="order()" [disabled]="item.inventoryStatus === 'OUTOFSTOCK'" class="flex-auto whitespace-nowrap" styleClass="w-full"></p-button> -->
