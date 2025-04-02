@@ -58,6 +58,8 @@ interface ExportColumn {
         ConfirmDialogModule
     ],
     template: `
+    <div class="card">
+        <p-toast position="top-center"></p-toast>
         <p-table
             #dt
             [value]="products()"
@@ -72,7 +74,7 @@ interface ExportColumn {
             [showCurrentPageReport]="true"
             [rowsPerPageOptions]="[10, 20, 30]"
         >
-            <ng-template #caption>
+            <ng-template #caption >
                 <div class="flex items-center justify-between">
                     <h5 class="m-0">Historique</h5>
                     <p-iconfield>
@@ -142,6 +144,7 @@ interface ExportColumn {
         </p-dialog>
 
         <p-confirmdialog [style]="{ width: '450px' }" />
+        </div>
     `,
     providers: [MessageService, ProductService, ConfirmationService]
 })
@@ -166,7 +169,7 @@ export class History implements OnInit {
         private productService: ProductService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
-    ) {}
+    ) { }
 
     ngOnInit() {
         this.loadDemoData();
@@ -263,6 +266,6 @@ export class History implements OnInit {
     }
 
     exportPdf() {
-        
+
     }
 }

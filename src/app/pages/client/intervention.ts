@@ -22,6 +22,9 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { ReparationClService, ReparationCl } from '../../services/reparation/reparation.service';
 import { DevisService } from '../../services/devis/devis.service';
 import { response } from 'express';
+import { VehiculeService } from '../../services/vehicule/vehicule.service';
+import { AuthService } from '../../services/user/auth.service';
+import { PaiementService } from '../../services/paiement/paiement.service';
 
 interface Column {
     field: string;
@@ -60,6 +63,7 @@ interface ExportColumn {
         ConfirmDialogModule
     ],
     template: `
+    <p-toast position="top-center"></p-toast>
         <p-toolbar styleClass="mb-6">
             <ng-template #start>
                 <p-button label="Nouveau intervention" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
@@ -243,7 +247,7 @@ interface ExportColumn {
 
     <ng-template #footer> 
         <p-button label="Refuser" [disabled]="details.length==0 || reparation.etat == 'en cours' || reparation.etat == 'annulé'" icon="pi pi-times" (click)="refuserDevis(repId, updateAnnule)" />
-        <p-button label="Accepter" [disabled]="details.length==0 || reparation.etat == 'en cours' || reparation.etat == 'annulé'" icon="pi pi-check" (click)="acceptDevis(repId, updateEnCours)" />
+        <p-button label="Payer" [disabled]="details.length==0 || reparation.etat == 'en cours' || reparation.etat == 'annulé'" icon="pi pi-check" (click)="acceptDevis(repId, updateEnCours,total)" />
     </ng-template>
 </p-dialog>
 
@@ -281,6 +285,15 @@ export class Intervention implements OnInit {
 
     modele: string = ""
 
+    montant: string = ""
+
+    newPaiement = {
+        montant: 0,
+        date: '',
+        reparationId: '',
+        clientId: '',
+    }
+
     reparations: ReparationCl[] = []
 
     total: any = {}
@@ -304,13 +317,20 @@ export class Intervention implements OnInit {
     constructor(
         private reparationService: ReparationClService,
         private devisService: DevisService,
+        private vehiculeService: VehiculeService,
         private messageService: MessageService,
-        private confirmationService: ConfirmationService
+        private confirmationService: ConfirmationService,
+        private authService: AuthService,
+        private paiementService: PaiementService
 
     ) { }
 
     setRepId(id: string) {
         this.repId = id
+    }
+
+    setMontant(montant: string) {
+        this.montant = montant
     }
 
     setMarque(id: string) {
@@ -323,11 +343,20 @@ export class Intervention implements OnInit {
 
     ngOnInit() {
         this.loadReparations()
+        this.loadVehicules()
+        // this.vehiListe = [
+        //     { label: 'Mazda - BT50', value: '67d0002e360d5465cfade482' },
+        //     { label: 'Audi - RS6', value: '67d009fa8e4dcccf0023d4e6' }
+        // ];
+    }
 
-        this.vehiListe = [
-            { label: 'Mazda - BT50', value: '67d0002e360d5465cfade482' },
-            { label: 'Audi - RS6', value: '67d009fa8e4dcccf0023d4e6' }
-        ];
+    loadVehicules() {
+        // this.vehiculeService.getVehicule().subscribe((data) => {
+        //     this.vehiListe = data.map(d => {
+        //         "label" : d._id
+        //     });
+        //     console.log('Données', this.vehiListe);
+        // });
     }
 
     loadReparations() {
@@ -354,7 +383,7 @@ export class Intervention implements OnInit {
         this.newInterventionDialog = true;
     }
 
-    detailIntervention(rep: ReparationCl,id: string, mr:string, md:string) {
+    detailIntervention(rep: ReparationCl, id: string, mr: string, md: string) {
         console.log("id", id)
         this.devisService.getDevis(id).subscribe((data) => {
             this.details = data.details
@@ -426,16 +455,32 @@ export class Intervention implements OnInit {
         this.newInterventionDialog = false;
     }
 
-    acceptDevis(id: string, update: any) {
+    acceptDevis(id: string, update: any, montant:number) {
         console.log(id, update)
-        this.reparationService.updateReparation(id,update).subscribe(
+        const token = this.authService.getToken()
+        this.newPaiement = {
+            montant: montant,
+            date: new Date().toISOString(),
+            reparationId: id,
+            clientId: token.id,
+        }
+
+        this.paiementService.setPaiement(this.newPaiement).subscribe(
             (response) => {
-                this.repId=""
+                console.log(response)
+            },
+            (error) => {
+            }
+        )
+
+        this.reparationService.updateReparation(id, update).subscribe(
+            (response) => {
+                this.repId = ""
                 this.loadReparations()
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Intervention Added',
+                    summary: 'Réussie',
+                    detail: 'Intervention modifié',
                     life: 3000
                 });
             },
@@ -448,20 +493,20 @@ export class Intervention implements OnInit {
                 });
             }
         )
-        // this.repId=""
+        this.repId=""
         this.hideDialog()
     }
 
     refuserDevis(id: string, update: any) {
         console.log(id, update)
-        this.reparationService.updateReparation(id,update).subscribe(
+        this.reparationService.updateReparation(id, update).subscribe(
             (response) => {
-                this.repId=""
+                this.repId = ""
                 this.loadReparations()
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Intervention Added',
+                    summary: 'Réussie',
+                    detail: 'Intervention refuser',
                     life: 3000
                 });
             },

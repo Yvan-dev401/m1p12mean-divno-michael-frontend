@@ -27,8 +27,8 @@ export class VehiculeService {
       return this.http.put(`${this.apiUrl}/${id}`, vehicule)
     }
   
-    deleteVehicule(id: string) : Observable<any>{
-      return this.http.delete(`${this.apiUrl}/${id}`)
+    deleteVehicule(id: string) : void{
+      this.http.delete(`${this.apiUrl}/${id}`)
     }
 
 }

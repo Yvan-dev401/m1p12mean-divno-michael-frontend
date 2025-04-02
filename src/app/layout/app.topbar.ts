@@ -82,9 +82,9 @@ import { response } from 'express';
 export class AppTopbar {
     items!: MenuItem[];
     profileOptions: MenuItem[] = [
-        { label: 'View Profile', icon: 'pi pi-user', command: () => this.viewProfile() },
-        { label: 'Settings', icon: 'pi pi-cog', command: () => this.openSettings() },
-        { label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() }
+        // { label: 'View Profile', icon: 'pi pi-user', command: () => this.viewProfile() },
+        // { label: 'Settings', icon: 'pi pi-cog', command: () => this.openSettings() },
+        { label: 'Deconnexion', icon: 'pi pi-sign-out', command: () => this.logout() }
     ];
 
     isProfileMenuOpen = false;
