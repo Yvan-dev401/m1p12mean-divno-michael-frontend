@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, NgModule, OnInit, signal, ViewChild } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Table, TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
@@ -25,6 +25,7 @@ import { response } from 'express';
 import { VehiculeService } from '../../services/vehicule/vehicule.service';
 import { AuthService } from '../../services/user/auth.service';
 import { PaiementService } from '../../services/paiement/paiement.service';
+import { FormatMontantPipe } from '../service/formattermontant.services';
 
 interface Column {
     field: string;
@@ -41,6 +42,7 @@ interface ExportColumn {
     selector: 'app-intervention',
     standalone: true,
     imports: [
+        FormatMontantPipe,
         CommonModule,
         TableModule,
         FormsModule,
@@ -75,9 +77,8 @@ interface ExportColumn {
             #dt
             [value]="reparations"
             [rows]="10"
-            [columns]="['date', 'voiture', 'description', 'prog','etat','meca']"
             [paginator]="true"
-            [globalFilterFields]="['date', 'voiture', 'description', 'prog','etat','meca']"
+            [globalFilterFields]="[ 'marque','etat']"
             [tableStyle]="{ 'min-width': '75rem' }"
             [(selection)]="selectedReparation"
             [rowHover]="true"
@@ -91,7 +92,7 @@ interface ExportColumn {
                     <h5 class="m-0">Planning</h5>
                     <p-iconfield>
                         <p-inputicon styleClass="pi pi-search" />
-                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher..." />
+                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher marque" />
                     </p-iconfield>
                 </div>
             </ng-template>
@@ -101,19 +102,21 @@ interface ExportColumn {
                         <p-tableHeaderCheckbox />
                     </th>
                     <!-- <th style="min-width: 16rem">Type</th> -->
-                    <th pSortableColumn="date" style="min-width:16rem">
+                    <th style="min-width:16rem">
                         Date et heure
+                       
                         <!-- <p-sortIcon field="date" /> -->
                     </th>
-                    <th pSortableColumn="voiture" style="min-width:16rem">
+                    <th pSortableColumn="marque" style="min-width:16rem">
                         Voiture
+                        <p-sortIcon field="marque" />
                         <!-- <p-sortIcon field="voiture" /> -->
                     </th>
-                    <th pSortableColumn="description" style="min-width:10rem">
+                    <th style="min-width:10rem">
                         Description
                         <!-- <p-sortIcon field="description" /> -->
                     </th>
-                    <th pSortableColumn="prog" style="min-width: 12rem">
+                    <th  style="min-width: 12rem">
                         Progression
                         <!-- <p-sortIcon field="prog" /> -->
                     </th>
@@ -221,18 +224,18 @@ interface ExportColumn {
                 <tr>
                     <th>Piece</th>
                     <th>Qté</th>
-                    <th>PU</th>
-                    <th>MO</th>
-                    <th>Total</th>
+                    <th style="text-align: right;">PU</th>
+                    <th style="text-align: right;">MO</th>
+                    <th style="text-align: right;">Total</th>
                 </tr>
                 </ng-template>
                 <ng-template #body let-detail>
                 <tr>
                     <td>{{ detail.nomPiece }}</td>
                     <td>{{ detail.quantite }}</td>
-                    <td>{{ detail.prixUnitaire }} €</td>
-                    <td>{{ detail.main_d_oeuvre }} €</td>
-                    <td>{{ (detail.quantite * detail.prixUnitaire) + detail.main_d_oeuvre }} €</td>
+                    <td style="text-align: right;">{{ detail.prixUnitaire | formatMontant}} </td>
+                    <td style="text-align: right;"> {{ detail.main_d_oeuvre | formatMontant}} </td>
+                    <td style="text-align: right;">{{ (detail.quantite * detail.prixUnitaire) + detail.main_d_oeuvre | formatMontant}} </td>
                 </tr>
                  {{setRepId(detail.reparationId ? detail.reparationId : "")}}
                 </ng-template>
@@ -240,7 +243,7 @@ interface ExportColumn {
             </div>
             <div>
                 <label for="description" class="block font-bold mb-3">Devis</label>
-                Total : {{ total }} €
+                Total : {{ total | formatMontant}} Ariary
             </div>
         </div>
     </ng-template>
@@ -321,7 +324,7 @@ export class Intervention implements OnInit {
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
         private authService: AuthService,
-        private paiementService: PaiementService
+        private paiementService: PaiementService,
 
     ) { }
 
@@ -533,7 +536,7 @@ export class Intervention implements OnInit {
                 return 'yellow';
             case 'annulé':
                 return 'red';
-            case 'prêt':
+            case 'pret':
                 return 'orange';
             default:
                 return 'info';

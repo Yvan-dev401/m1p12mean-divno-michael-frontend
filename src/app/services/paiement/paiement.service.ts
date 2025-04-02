@@ -9,6 +9,10 @@ export class PaiementService {
 
     constructor(private http: HttpClient) {}
 
+    getStatistique(): Observable<any> {
+      return this.http.get(`${this.apiUrl}/stat`);
+  }
+
     getPaiement(): Observable<any> {
         return this.http.get(this.apiUrl);
     }
@@ -18,7 +22,7 @@ export class PaiementService {
     }
 }
 
-export interface PaiementService {
+export interface Paiement {
     _id?: string;
     reparationId?: string;
     clientId?: string;

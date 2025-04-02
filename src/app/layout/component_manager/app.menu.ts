@@ -32,11 +32,11 @@ export class AppMenu {
                         icon: 'pi pi-fw pi-home',
                         routerLink: ['manager/dashboard']
                     },
-                    {
-                        label: 'Mécaniciens',
-                        icon: 'pi pi-fw pi-users',
-                        routerLink: ['manager/mechanics']
-                    },
+                    // {
+                    //     label: 'Mécaniciens',
+                    //     icon: 'pi pi-fw pi-users',
+                    //     routerLink: ['manager/mechanics']
+                    // },
                     {
                         label: 'Pièces',
                         icon: 'pi pi-fw pi-cog',
@@ -53,12 +53,12 @@ export class AppMenu {
                                 routerLink: ['manager/order']
                             }
                         ]
-                    },
-                    {
-                        label: 'Recettes',
-                        icon: 'pi pi-fw pi-money-bill',
-                        routerLink: ['manager/receipts']
                     }
+                    // {
+                    //     label: 'Recettes',
+                    //     icon: 'pi pi-fw pi-money-bill',
+                    //     routerLink: ['manager/receipts']
+                    // }
                 ]
             }
             /* {
