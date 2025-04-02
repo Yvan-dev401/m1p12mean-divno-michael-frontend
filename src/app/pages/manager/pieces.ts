@@ -12,16 +12,29 @@ import { StockService, Stock } from '../service/stock.service';
 import { CommandeService } from '../service/commande.service';
 import { DialogModule } from 'primeng/dialog';
 import { ToolbarModule } from 'primeng/toolbar';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 
 @Component({
     selector: 'app-pieces',
-    imports: [CommonModule, DataViewModule, FormsModule, SelectButtonModule, PickListModule, OrderListModule, TagModule, ButtonModule, DialogModule, ToolbarModule],
+    imports: [CommonModule, DataViewModule, FormsModule, SelectButtonModule, PickListModule, OrderListModule, TagModule, ButtonModule, DialogModule, ToolbarModule, IconFieldModule, InputIconModule],
     template: `
         <p-toolbar styleClass="mb-6">
             <ng-template #start>
                 <p-button label="Nouveau pièce" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="newPiece()" />
             </ng-template>
+            <ng-template #center>
+                <div class="flex items-center justify-between">
+                    <div class="p-inputgroup">
+                        <input pInputText type="text" (input)="onGlobalFilter($event)" placeholder="Rechercher..." class="no-border" />
+                        <span class="p-inputgroup-addon">
+                            <i class="pi pi-search"></i>
+                        </span>
+                    </div>
+                </div>
+            </ng-template>
         </p-toolbar>
+
         <div class="flex flex-col">
             <div class="card">
                 <div class="font-semibold text-xl">Inventaire</div>
@@ -189,6 +202,11 @@ import { ToolbarModule } from 'primeng/toolbar';
                 width: 100%;
             }
         }
+        .no-border {
+            border: none !important;
+            box-shadow: none !important;
+            outline: none !important;
+        }
     `,
     providers: [ProductService, StockService]
 })
@@ -215,6 +233,8 @@ export class Pieces {
     orderCities: any[] = [];
 
     selectedStock: Stock | null = null;
+
+    originalStocks: Stock[] = [];
 
     constructor(
         private productService: ProductService,
@@ -250,8 +270,21 @@ export class Pieces {
     }
 
     listStocks() {
-        this.stockService.getStock().subscribe((data) => (this.stocks = data));
+        this.stockService.getStock().subscribe((data) => {
+            this.stocks = data;
+            this.originalStocks = [...data]; // Sauvegarde des données originales
+        });
     }
+
+    onGlobalFilter(event: Event) {
+        const query = (event.target as HTMLInputElement).value.toLowerCase();
+        if (query) {
+            this.stocks = this.originalStocks.filter((stock) => stock.nomPiece.toLowerCase().startsWith(query));
+        } else {
+            this.stocks = [...this.originalStocks]; // Restauration des données originales
+        }
+    }
+
     newPiece() {
         this.newPieceDialog = true;
     }
@@ -280,7 +313,7 @@ export class Pieces {
             .insertCommande({
                 idStock: idStock,
                 orderQuantite: this.orderQuantity,
-                nomPiece: this.selectedStock?.nomPiece || '',
+                nomPiece: this.selectedStock?.nomPiece || ''
             })
             .subscribe(() => {
                 this.orderDialog = false;

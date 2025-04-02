@@ -116,8 +116,10 @@ export class AppTopbar {
         this.userService.logout().subscribe(
             (response => {
                 if(response.st == "yes"){
-                    console.log(response.message)
-                    this.router.navigate(['auth/login'])
+                    console.log(response.message);
+                    document.cookie = 'SessionID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                    window.location.reload();
+                    // this.router.navigate(['/']);
                 }
             })
         )
