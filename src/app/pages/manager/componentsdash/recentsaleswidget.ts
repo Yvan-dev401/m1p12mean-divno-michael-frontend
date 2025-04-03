@@ -34,7 +34,7 @@ import { ReparationService, Reparation } from '../../service/reparation.service'
                 </tr>
             </ng-template>
         </p-table>
-        <p-dialog [(visible)]="interventionDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
+        <p-dialog [(visible)]="interventionDialog" [style]="{ width: '450px' }" header="Intervention" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
@@ -80,7 +80,7 @@ export class RecentSalesWidget {
     loadReparations() {
         this.reparationService.getReparations().subscribe((data) => {
             // Filtrer les réparations avec un état "En cours"
-            this.reparations = data.filter((reparation) => reparation.etat === 'En cours');
+            this.reparations = data.filter((reparation) => reparation.etat === 'en cours');
         });
     }
 

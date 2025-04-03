@@ -29,6 +29,7 @@ import { AutoComplete } from 'primeng/autocomplete';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../services/user/auth.service';
 import { DevisService } from '../../services/devis/devis.service';
+import { FormatMontantPipe } from '../service/formattermontant.services';
 
 interface Column {
     field: string;
@@ -50,6 +51,7 @@ interface AutoCompleteCompleteEvent {
     selector: 'app-dashboard',
     standalone: true,
     imports: [
+        FormatMontantPipe,
         CommonModule,
         TableModule,
         FormsModule,
@@ -185,19 +187,20 @@ interface AutoCompleteCompleteEvent {
                 <tr>
                     <th>Piece</th>
                     <th>Qté</th>
-                    <th>PU</th>
-                    <th>MO</th>
-                    <th>Total</th>
+                    <th style="text-align: right;">PU</th>
+                    <th style="text-align: right;">MO</th>
+                    <th style="text-align: right;">Total</th>
                 </tr>
                 </ng-template>
                 <ng-template #body let-detail>
                 <tr>
                     <td>{{ detail.nomPiece }}</td>
                     <td>{{ detail.quantite }}</td>
-                    <td>{{ detail.prixUnitaire }} Ar</td>
-                    <td>{{ detail.main_d_oeuvre }} Ar</td>
-                    <td>{{ (detail.quantite * detail.prixUnitaire) + detail.main_d_oeuvre }} Ar</td>
+                    <td style="text-align: right;">{{ detail.prixUnitaire | formatMontant}} </td>
+                    <td style="text-align: right;"> {{ detail.main_d_oeuvre | formatMontant}} </td>
+                    <td style="text-align: right;">{{ (detail.quantite * detail.prixUnitaire) + detail.main_d_oeuvre | formatMontant}} </td>
                 </tr>
+            
                 </ng-template>
                 </p-table>
             </div>
@@ -518,7 +521,7 @@ export class Dashboard implements OnInit {
                 const token = this.authService.getToken();
                 const updateData = {
                     mecanicienId: token.id,
-                    etat: "en cours"
+                    etat: "pret"
                 };
 
                 this.reparationService.updateReparation(this.reparation._id, updateData).subscribe(

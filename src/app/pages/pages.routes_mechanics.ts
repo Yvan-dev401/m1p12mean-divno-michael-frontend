@@ -5,10 +5,9 @@ import { History } from './client/history';
 import { Intervention } from './client/intervention';
 import { Dashboard as ManagerDashboard } from './manager/dashboard';
 import { Dashboard as MechanicsDashboard } from './mechanics/dashboard';
-import { Mechanics } from './manager/mechanics';
+import { Mechanics } from './manager/componentsdash/mechanics';
 import { Pieces as ManagerPieces } from './manager/pieces';
 import { Pieces as MechanicsPieces } from './mechanics/pieces';
-import { Receipts } from './manager/receipts';
 import { Order } from './manager/order';
 
 export default [

@@ -12,11 +12,12 @@ import { StockService, Stock } from '../service/stock.service';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { ToolbarModule } from 'primeng/toolbar';
+import { FormatMontantPipe } from '../service/formattermontant.services';
 
 @Component({
     selector: 'app-pieces',
     standalone: true,
-    imports: [CommonModule, DataViewModule, FormsModule, SelectButtonModule, PickListModule, OrderListModule, TagModule, ButtonModule, IconFieldModule, InputIconModule, ToolbarModule],
+    imports: [CommonModule, DataViewModule,FormatMontantPipe, FormsModule, SelectButtonModule, PickListModule, OrderListModule, TagModule, ButtonModule, IconFieldModule, InputIconModule, ToolbarModule],
     template: ` <p-toolbar styleClass="mb-6">
             <ng-template #center>
                 <div class="flex items-center justify-between">
@@ -63,7 +64,7 @@ import { ToolbarModule } from 'primeng/toolbar';
                                             </div>
                                         </div>
                                         <div class="flex flex-col md:items-end gap-8">
-                                            <span class="text-xl font-semibold">Ar {{ stock.prixUnitaire }}</span>
+                                            <span class="text-xl font-semibold">Ar {{ stock.prixUnitaire| formatMontant }}</span>
                                             <div class="flex flex-row-reverse md:flex-row gap-2"></div>
                                         </div>
                                     </div>
@@ -74,7 +75,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 
                     <ng-template #grid let-items>
                         <div class="grid grid-cols-12 gap-4">
-                            <div *ngFor="let stock of stocks; let i = index" class="col-span-12 sm:col-span-6 lg:col-span-4 p-2">
+                            <div *ngFor="let stock of stocks; let i = index" class="col-span-12 sm:col-span-6 lg:col-span-3 p-2">
                                 <div class="p-6 border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 rounded flex flex-col">
                                     <div class="bg-surface-50 flex justify-center rounded p-6">
                                         <!-- <div class="relative mx-auto">
@@ -92,7 +93,7 @@ import { ToolbarModule } from 'primeng/toolbar';
                                             </div>
                                         </div>
                                         <div class="flex flex-col gap-6 mt-6">
-                                            <span class="text-2xl font-semibold">Ar {{ stock.prixUnitaire }}</span>
+                                            <span class="text-2xl font-semibold">Ar {{ stock.prixUnitaire | formatMontant}}</span>
                                             <div class="flex gap-2"></div>
                                         </div>
                                     </div>

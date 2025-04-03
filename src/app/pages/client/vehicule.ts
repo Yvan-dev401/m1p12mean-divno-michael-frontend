@@ -148,31 +148,31 @@ interface ExportColumn {
                 <div class="flex flex-col gap-6">
                     <div>
                         <label class="block font-bold mb-3">Marque</label>
-                        <input type="text" pInputText id="name" [(ngModel)]="newVehi.marque" fluid />
+                        <input type="text" pInputText id="name" [(ngModel)]="newVehi.marque" />
                     </div>
                     <div>
                         <label class="block font-bold mb-3">Modele</label>
-                        <input type="text" pInputText id="modele" [(ngModel)]="newVehi.modele" fluid />
+                        <input type="text" pInputText id="modele" [(ngModel)]="newVehi.modele" />
                     </div>
                     <div>
                         <label class="block font-bold mb-3">Annee de sortie</label>
-                        <input type="text" pInputText id="annee" [(ngModel)]="newVehi.annee" fluid />
+                        <input type="text" pInputText id="annee" [(ngModel)]="newVehi.annee" />
                     </div>
                     <div>
                         <label class="block font-bold mb-3">Kilometrage</label>
-                        <input type="text" pInputText id="kilometrage" [(ngModel)]="newVehi.kilometrage" fluid />
+                        <input type="text" pInputText id="kilometrage" [(ngModel)]="newVehi.kilometrage" />
                     </div>
                     <div>
                         <label class="block font-bold mb-3">Plaque d'immatriculation</label>
-                        <input type="text" pInputText id="plaqueImmatriculation" [(ngModel)]="newVehi.plaqueImmatriculation" fluid />
+                        <input type="text" pInputText id="plaqueImmatriculation" [(ngModel)]="newVehi.plaqueImmatriculation" />
                     </div>
                     <!-- <div>
                         <label for="description" class="block font-bold mb-3">Description de la voiture</label>
-                        <textarea id="description" pTextarea [(ngModel)]="vehicule.description" required rows="3" cols="20" fluid></textarea>
+                        <textarea id="description" pTextarea [(ngModel)]="vehicule.description" required rows="3" cols="20"></textarea>
                     </div>
                     <div>
                         <label for="name" class="block font-bold mb-3">Kilométrage</label>
-                        <input type="number" pInputText id="name" required autofocus fluid />
+                        <input type="number" pInputText id="name" required autofocus />
                         <small class="text-red-500" *ngIf="submitted && !product.name">Le kilométrage est requis.</small>
                     </div> -->
                 </div>
@@ -188,23 +188,23 @@ interface ExportColumn {
                 <div class="flex flex-col gap-6">
                 <div>
                         <label class="block font-bold mb-3">Marque</label>
-                        <input type="text" pInputText id="name" [(ngModel)]="updateVehi.marque" fluid />
+                        <input type="text" pInputText id="name" [(ngModel)]="updateVehi.marque" />
                     </div>
                     <div>
                         <label class="block font-bold mb-3">Modele</label>
-                        <input type="text" pInputText id="modele" [(ngModel)]="updateVehi.modele" fluid />
+                        <input type="text" pInputText id="modele" [(ngModel)]="updateVehi.modele" />
                     </div>
                     <div>
                         <label class="block font-bold mb-3">Annee de sortie</label>
-                        <input type="text" pInputText id="annee" [(ngModel)]="updateVehi.annee" fluid />
+                        <input type="text" pInputText id="annee" [(ngModel)]="updateVehi.annee" />
                     </div>
                     <div>
                         <label class="block font-bold mb-3">Kilometrage</label>
-                        <input type="text" pInputText id="kilometrage" [(ngModel)]="updateVehi.kilometrage" fluid />
+                        <input type="text" pInputText id="kilometrage" [(ngModel)]="updateVehi.kilometrage" />
                     </div>
                     <div>
                         <label class="block font-bold mb-3">Plaque d'immatriculation</label>
-                        <input type="text" pInputText id="plaqueImmatriculation" [(ngModel)]="updateVehi.plaqueImmatriculation" fluid />
+                        <input type="text" pInputText id="plaqueImmatriculation" [(ngModel)]="updateVehi.plaqueImmatriculation" />
                     </div>
                 </div>
             </ng-template>
