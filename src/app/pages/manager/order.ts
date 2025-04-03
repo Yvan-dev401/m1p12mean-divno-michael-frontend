@@ -94,7 +94,7 @@ interface ExportColumn {
                         Quantité
                     </th>
                     <th pSortableColumn="inventoryStatus" style="min-width: 12rem">
-                        État
+                        État et Action
                     </th>
                     <th style="min-width: 12rem"></th>
                 </tr>
