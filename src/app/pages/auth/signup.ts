@@ -8,6 +8,7 @@ import { PasswordModule } from 'primeng/password';
 import { RippleModule } from 'primeng/ripple';
 import { AppFloatingConfigurator } from '../../layout/app.floatingconfigurator';
 import { DropdownModule } from 'primeng/dropdown';
+import { UserService } from '../../services/user/user.service';
 
 @Component({
     selector: 'app-signup',
@@ -25,8 +26,14 @@ import { DropdownModule } from 'primeng/dropdown';
                         </div>
 
                         <div>
+                            <label for="nom" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Nom complet</label>
+                            <input pInputText [(ngModel)]="nom" id="nom" type="text" placeholder="John Doe" class="w-full md:w-[30rem] mb-8" />
+
+                            <label for="username" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Nom d'utilisateur</label>
+                            <input pInputText [(ngModel)]="username" id="username" type="text" placeholder="John" class="w-full md:w-[30rem] mb-8" />
+
                             <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                            <input pInputText id="email1" type="text" placeholder="Adresse email" class="w-full md:w-[30rem] mb-8" [(ngModel)]="email" />
+                            <input pInputText [(ngModel)]="email" id="email1" type="text" placeholder="Adresse email" class="w-full md:w-[30rem] mb-8" />
 
                             <label for="role" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Rôle</label>
                             <p-dropdown id="role" [options]="roles" [(ngModel)]="selectedRole" placeholder="Sélectionner un rôle" class="w-full md:w-[30rem] mb-8"></p-dropdown>
@@ -38,7 +45,7 @@ import { DropdownModule } from 'primeng/dropdown';
                             <p-password id="password2" [(ngModel)]="password_confirmed" placeholder="Confirmer votre mot de passe" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
 
                             <div class="flex items-center justify-between mt-2 mb-8 gap-8"></div>
-                            <p-button label="S'inscrire" styleClass="w-full" routerLink="/"></p-button>
+                            <p-button label="S'inscrire" styleClass="w-full" (click)="signup()"></p-button>
                         </div>
                     </div>
                 </div>
@@ -47,8 +54,9 @@ import { DropdownModule } from 'primeng/dropdown';
     `
 })
 export class Signup {
-
     email: string = '';
+    nom: string = '';
+    username: string = '';
     password: string = '';
     password_confirmed: string = '';
     selectedRole: string = '';
@@ -57,4 +65,33 @@ export class Signup {
         { label: 'Mécanicien', value: 'mecanicien' }
     ];
     checked: boolean = false;
+
+    constructor(private userService: UserService) {}
+
+    signup() {
+        if (this.password !== this.password_confirmed) {
+            console.error("Les mots de passe ne correspondent pas.");
+            alert("Les mots de passe ne correspondent pas.");
+            return;
+        }
+
+        const user = {
+            nom: this.nom,
+            username: this.username,
+            email: this.email,
+            password: this.password,
+            role: this.selectedRole
+        };
+
+        this.userService.inscription(user).subscribe(
+            (response) => {
+                console.log('Inscription réussie', response);
+                // Rediriger ou afficher un message de succès
+            },
+            (error) => {
+                console.error("Erreur lors de l'inscription", error);
+                // Afficher un message d'erreur
+            }
+        );
+    }
 }
