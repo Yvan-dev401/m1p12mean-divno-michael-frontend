@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -13,7 +14,7 @@ import { UserService } from '../../services/user/user.service';
 @Component({
     selector: 'app-signup',
     standalone: true,
-    imports: [ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule, AppFloatingConfigurator, DropdownModule],
+    imports: [ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule, AppFloatingConfigurator, DropdownModule, CommonModule],
     template: `
         <app-floating-configurator />
         <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-[100vw] overflow-hidden">
@@ -44,7 +45,11 @@ import { UserService } from '../../services/user/user.service';
                             <label for="password2" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Confirmer votre mot de passe</label>
                             <p-password id="password2" [(ngModel)]="password_confirmed" placeholder="Confirmer votre mot de passe" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
 
-                            <div class="flex items-center justify-between mt-2 mb-8 gap-8"></div>
+                            <div *ngIf="message" [ngClass]="{ 'text-green-500': messageType === 'success', 'text-red-500': messageType === 'error' }" class="mb-4 text-center">
+                                {{ message }}
+                            </div>
+
+                            <!-- <div class="flex items-center justify-between mt-2 mb-8 gap-8"></div> -->
                             <p-button label="S'inscrire" styleClass="w-full" (click)="signup()"></p-button>
                         </div>
                     </div>
@@ -62,13 +67,45 @@ export class Signup {
     selectedRole: string = '';
     roles: any[] = [
         { label: 'Client', value: 'client' },
-        { label: 'Mécanicien', value: 'mecanicien' }
+        { label: 'Mécanicien', value: 'mécanicien' }
     ];
     checked: boolean = false;
+
+    message: string = '';
+    messageType: 'success' | 'error' = 'success';
 
     constructor(private userService: UserService) {}
 
     signup() {
+        if (this.password !== this.password_confirmed) {
+            this.message = 'Les mots de passe ne correspondent pas.';
+            this.messageType = 'error';
+            return;
+        }
+
+        const user = {
+            nom: this.nom,
+            username: this.username,
+            email: this.email,
+            password: this.password,
+            role: this.selectedRole
+        };
+
+        this.userService.inscription(user).subscribe(
+            (response) => {
+                this.message = 'Inscription réussie !';
+                this.messageType = 'success';
+                console.log('Inscription réussie', response);
+            },
+            (error) => {
+                this.message = "Erreur lors de l'inscription. Veuillez réessayer.";
+                this.messageType = 'error';
+                console.error("Erreur lors de l'inscription", error);
+            }
+        );
+    }
+
+    /* signup() {
         if (this.password !== this.password_confirmed) {
             console.error("Les mots de passe ne correspondent pas.");
             alert("Les mots de passe ne correspondent pas.");
@@ -93,5 +130,5 @@ export class Signup {
                 // Afficher un message d'erreur
             }
         );
-    }
+    } */
 }
