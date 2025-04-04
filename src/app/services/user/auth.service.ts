@@ -8,8 +8,8 @@ import { jwtDecode } from 'jwt-decode';
 export class AuthService {
     constructor(private cookieService: CookieService) { }
 
-    getSessionToken(): string{
-        return this.cookieService.get('SessionID');
+    getSessionToken(): string | null {
+        return this.cookieService.get('SessionID') || null;
     }
 
     decodeToken(token: string): any {
@@ -23,7 +23,7 @@ export class AuthService {
 
     getToken(): any {
         const token = this.getSessionToken();
-        console.log("tokensdfqsdf",token)
+        console.log("tokens", token)
         if (token) {
             return this.decodeToken(token);
         }
