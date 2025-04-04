@@ -23,6 +23,7 @@ export class AuthService {
 
     getToken(): any {
         const token = this.getSessionToken();
+        console.log("token",token)
         if (token) {
             return this.decodeToken(token);
         }
