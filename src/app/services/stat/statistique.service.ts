@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class StatistiqueService {
-  private apiUrl = 'http://localhost:5000/statistique';
+  private apiUrl = 'https://m1p12mean-divno-michael-backend.onrender.com/statistique';
 
   constructor(private http: HttpClient) { }
 

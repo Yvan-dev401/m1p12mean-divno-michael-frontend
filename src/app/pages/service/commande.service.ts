@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
     providedIn: 'root'
 })
 export class CommandeService {
-    private apiUrl = 'http://localhost:5000/commande';
+    private apiUrl = 'https://m1p12mean-divno-michael-backend.onrender.com/commande';
 
     constructor(private http: HttpClient) {}
 

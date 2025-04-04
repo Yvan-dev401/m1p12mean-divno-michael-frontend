@@ -49,7 +49,7 @@ import { TabsModule } from 'primeng/tabs';
                                     <div class="flex items-center">
                                         <!-- <p-checkbox [(ngModel)]="checked" id="rememberme1" binary class="mr-2"></p-checkbox>
                                     <label for="rememberme1">Remember me</label> -->
-                                        <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Mot de passe oublié ?</span>
+                                        <!-- <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Mot de passe oublié ?</span> -->
                                     </div>
 
                                     <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary" routerLink="/auth/signup">S'inscrire?</span>

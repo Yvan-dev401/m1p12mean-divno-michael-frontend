@@ -13,7 +13,7 @@ export class AuthGuard implements CanActivate {
     if( token ){
       const role = token.role;
       const requiredRole = route.data['role']
-      console.log(token.id)
+      console.log("cookie",token.id)
 
       if(role == requiredRole){
         return true;
