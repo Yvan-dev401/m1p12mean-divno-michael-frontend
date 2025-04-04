@@ -8,13 +8,9 @@ import { jwtDecode } from 'jwt-decode';
 export class AuthService {
     constructor(private cookieService: CookieService) { }
 
-    getSessionToken(name: string): string | null {
-        const matches = document.cookie.match(new RegExp(
-          "(?:^|; )" + name.replace(/([\.$?|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;])"
-        ));
-        return matches ? decodeURIComponent(matches[1]) : null;
-      }
-    
+    getSessionToken(): string{
+        return this.cookieService.get('SessionID');
+    }
 
     decodeToken(token: string): any {
         try {
@@ -26,8 +22,8 @@ export class AuthService {
     }
 
     getToken(): any {
-        const token = this.getSessionToken('SessionId');
-        console.log("token_ddd",token)
+        const token = this.getSessionToken();
+        console.log("tokensdfqsdf",token)
         if (token) {
             return this.decodeToken(token);
         }
