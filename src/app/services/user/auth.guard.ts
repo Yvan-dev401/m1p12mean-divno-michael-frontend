@@ -10,6 +10,7 @@ export class AuthGuard implements CanActivate {
 
   canActivate(route : ActivatedRouteSnapshot): boolean {
     const token = this.authService.getToken();
+    console.log("mlkfjmsdlj")
     if( token ){
       const role = token.role;
       const requiredRole = route.data['role']
