@@ -9,12 +9,7 @@ export class AuthService {
     constructor(private cookieService: CookieService) { }
 
     getSessionToken(): string | null {
-        try {
-            return this.cookieService.get('SessionID') || null;
-        } catch (e) {
-            console.error('Error accessing cookies:', e);
-            return null;
-        }
+        return this.cookieService.get('SessionID') || null;
     }
 
     decodeToken(token: string): any {
