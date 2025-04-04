@@ -61,6 +61,8 @@ interface ExportColumn {
         OverlayPanelModule
     ],
     template: `
+    <div class="card">
+    <p-toast position="top-center"></p-toast>
         <p-table
             #dt
             [value]="commandes"
@@ -119,6 +121,7 @@ interface ExportColumn {
                 </tr>
             </ng-template>
         </p-table>
+        </div>
         <style>
             .status-option {
                 padding: 8px 12px;
@@ -162,7 +165,7 @@ export class Order implements OnInit {
     selectedCommande!: Commande[] | null;
     commandeStatuses!: any[];
 
-    constructor(private commandeService: CommandeService) {}
+    constructor(private commandeService: CommandeService, private messageService: MessageService) { }
 
     ngOnInit() {
         this.loadCommande();
@@ -175,14 +178,24 @@ export class Order implements OnInit {
     }
 
     changeStatus(commande: Commande, status: string) {
-        commande.etat = status; // Mise à jour locale
+        commande.etat = status;
         this.commandeService.changeStatus(commande._id, status).subscribe({
             next: () => {
-                console.log(`Commande ${commande._id} mise à jour avec succès.`);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Réussie',
+                    detail: 'Vehicule ajouté avec succès',
+                    life: 3000
+                });
                 this.loadCommande();
             },
             error: (err) => {
-                console.error(`Erreur lors de la mise à jour de la commande ${commande._id}:`, err);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'erreur',
+                    detail: '',
+                    life: 3000
+                });
             }
         });
     }

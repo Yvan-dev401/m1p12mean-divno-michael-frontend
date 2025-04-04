@@ -51,11 +51,6 @@ export class AppMenu {
                                 routerLink: ['client/history']
                             }
                         ]
-                    },
-                    {
-                        label: 'Calendrier',
-                        icon: 'pi pi-fw pi-calendar',
-                        routerLink: ['client/calendar']
                     }
                 ]
             }

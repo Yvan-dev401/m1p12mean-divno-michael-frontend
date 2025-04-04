@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
     providedIn: 'root'
 })
 export class SortieSevice {
-    private apiUrl = 'http://localhost:5000/sortie';
+    private apiUrl = 'https://m1p12mean-divno-michael-backend.onrender.com/sortie';
 
     constructor(private http: HttpClient) {}
 

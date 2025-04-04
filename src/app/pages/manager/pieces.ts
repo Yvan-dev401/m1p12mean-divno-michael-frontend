@@ -55,17 +55,18 @@ import { FormatMontantPipe } from '../service/formattermontant.services';
                         <div class="flex flex-col">
                             <div *ngFor="let stock of stocks; let i = index">
                                 <div class="flex flex-col sm:flex-row sm:items-center p-6 gap-4" [ngClass]="{ 'border-t border-surface': i !== 0 }">
-                                    <!-- <div class="md:w-40 relative">
-                                        <img class="block xl:block mx-auto rounded w-full" src="https://primefaces.org/cdn/primevue/images/product/{{ item.image }}" [alt]="item.name" />
+                                    <div class="md:w-40 relative">
+                                    <p-tag  [value]="getStatus(stock.quantiteDisponible)" [severity]="mapSeverity(getSeverity(stock.quantiteDisponible))"></p-tag>
+                                        <!-- <img class="block xl:block mx-auto rounded w-full" src="https://primefaces.org/cdn/primevue/images/product/{{ item.image }}" [alt]="item.name" />
                                         <div class="absolute bg-black/70 rounded-border" [style]="{ left: '4px', top: '4px' }">
                                             <p-tag [value]="item.inventoryStatus" [severity]="getSeverity(item)"></p-tag>
-                                        </div>
-                                    </div> -->
+                                        </div> -->
+                                    </div>
                                     <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
                                         <div class="flex flex-row md:flex-col justify-between items-start gap-2">
                                             <div>
-                                                <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ stock.nomPiece }}</span>
-                                                <div class="text-lg font-medium mt-2">Quantité : {{ stock.quantiteDisponible }}</div>
+                                            <span class="text-lg font-medium mt-2">{{ stock.nomPiece }}</span>
+                                            <div class="font-medium text-surface-500 dark:text-surface-400 text-sm" >Quantité : {{ stock.quantiteDisponible }}</div>
                                             </div>
                                             <!-- <div class="bg-surface-100 p-1" style="border-radius: 30px">
                                                 <div
@@ -100,19 +101,20 @@ import { FormatMontantPipe } from '../service/formattermontant.services';
                         <div class="grid grid-cols-12 gap-4">
                             <div *ngFor="let stock of stocks; let i = index" class="col-span-12 sm:col-span-6 lg:col-span-4 p-2">
                                 <div class="p-6 border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 rounded flex flex-col">
-                                    <!-- <div class="bg-surface-50 flex justify-center rounded p-6">
-                                        <div class="relative mx-auto">
+                                    <div class="bg-surface-50 flex justify-center rounded p-6">
+                                    <p-tag  [value]="getStatus(stock.quantiteDisponible)" [severity]="mapSeverity(getSeverity(stock.quantiteDisponible))"></p-tag>
+                                        <!-- <div class="relative mx-auto">
                                             <img class="rounded w-full" src="https://primefaces.org/cdn/primevue/images/product/{{ item.image }}" [alt]="item.name" style="max-width: 300px" />
                                             <div class="absolute bg-black/70 rounded-border" [style]="{ left: '4px', top: '4px' }">
                                                 <p-tag [value]="item.inventoryStatus" [severity]="getSeverity(item)"></p-tag>
                                             </div>
-                                        </div>
-                                    </div> -->
+                                        </div> -->
+                                    </div>
                                     <div class="pt-12">
                                         <div class="flex flex-row justify-between items-start gap-2">
                                             <div>
-                                                <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ stock.nomPiece }}</span>
-                                                <div class="text-lg font-medium mt-1">Quantité : {{ stock.quantiteDisponible }}</div>
+                                            <span class="text-lg font-medium mt-2">{{ stock.nomPiece }}</span>
+                                            <div class="font-medium text-surface-500 dark:text-surface-400 text-sm" >Quantité : {{ stock.quantiteDisponible }}</div>
                                             </div>
                                             <!-- <div class="bg-surface-100 p-1" style="border-radius: 30px">
                                                 <div
@@ -173,7 +175,7 @@ import { FormatMontantPipe } from '../service/formattermontant.services';
 
             <ng-template #footer>
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Insérer" icon="pi pi-check" (click)="save()" />
+                <p-button label="Insérer" [disabled]="!namePiece || quantity<=0 " icon="pi pi-check" (click)="save()" />
             </ng-template>
         </p-dialog>
 
@@ -193,7 +195,7 @@ import { FormatMontantPipe } from '../service/formattermontant.services';
 
             <ng-template #footer>
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button icon="pi pi-shopping-cart" label="Commander" (click)="selectedStock && order(selectedStock._id)" styleClass="flex-auto md:flex-initial whitespace-nowrap"></p-button>
+                <p-button icon="pi pi-shopping-cart" [disabled]="orderQuantity<=0" label="Commander" (click)="selectedStock && order(selectedStock._id)" styleClass="flex-auto md:flex-initial whitespace-nowrap"></p-button>
             </ng-template>
         </p-dialog>
     `,
@@ -329,17 +331,48 @@ export class Pieces {
         this.selectedStock = null;
     }
 
-    getSeverity(product: Product) {
-        switch (product.inventoryStatus) {
-            case 'INSTOCK':
+    getStatus(qt:number){
+        if( qt>0 &&qt< 5){
+            return "Faible"
+        }
+        else if(qt>5){
+            return "Suffisant"
+        }
+        else if(qt == 0){
+            return "Insuffisant"    
+        }
+        else{
+            return "tsy mety"
+        }
+    }
+
+    getSeverity(qt:number) {
+        if(qt>0 && qt< 5){
+            return "orange"
+        }
+        else if(qt>5){
+            return "yellow"
+        }
+        else if(qt == 0){
+            return "red"
+        }
+        else{
+            return "tsy mety"
+        }
+    }
+
+    mapSeverity(severity: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | undefined {
+        switch (severity) {
+            case 'blue':
+                return 'info';
+            case 'green':
                 return 'success';
-
-            case 'LOWSTOCK':
-                return 'warn';
-
-            case 'OUTOFSTOCK':
+            case 'yellow':
+                return 'secondary';
+            case 'red':
                 return 'danger';
-
+            case 'orange':
+                return 'warn';
             default:
                 return 'info';
         }

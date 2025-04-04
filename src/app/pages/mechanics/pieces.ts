@@ -50,17 +50,17 @@ import { FormatMontantPipe } from '../service/formattermontant.services';
                         <div class="flex flex-col">
                             <div *ngFor="let stock of stocks; let i = index">
                                 <div class="flex flex-col sm:flex-row sm:items-center p-6 gap-4" [ngClass]="{ 'border-t border-surface': i !== 0 }">
-                                    <!-- <div class="md:w-40 relative">
-                                    <img class="block xl:block mx-auto rounded w-full" src="https://primefaces.org/cdn/primevue/images/product/{{ item.image }}" [alt]="item.name" />
-                                    <div class="absolute bg-black/70 rounded-border" [style]="{ left: '4px', top: '4px' }">
-                                        <p-tag [value]="item.inventoryStatus" [severity]="getSeverity(item)"></p-tag>
-                                    </div>
-                                </div> -->
+                                    <div class="md:w-40 relative">
+                                    <!-- <img class="block xl:block mx-auto rounded w-full" src="https://primefaces.org/cdn/primevue/images/product/{{ item.image }}" [alt]="item.name" /> -->
+                                    <!-- <div class="absolute bg-black/70 rounded-border" [style]="{ width:'5px',left: '2px', top: '2px' }"> -->
+                                        <p-tag  [value]="getStatus(stock.quantiteDisponible)" [severity]="mapSeverity(getSeverity(stock.quantiteDisponible))"></p-tag>
+                                    <!-- </div> -->
+                                </div>
                                     <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
                                         <div class="flex flex-row md:flex-col justify-between items-start gap-2">
                                             <div>
-                                                <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ stock.nomPiece }}</span>
-                                                <div class="text-lg font-medium mt-2">Quantité : {{ stock.quantiteDisponible }}</div>
+                                                <span class="text-lg font-medium mt-2">{{ stock.nomPiece }}</span>
+                                                <div class="font-medium text-surface-500 dark:text-surface-400 text-sm" >Quantité : {{ stock.quantiteDisponible }}</div>
                                             </div>
                                         </div>
                                         <div class="flex flex-col md:items-end gap-8">
@@ -78,6 +78,7 @@ import { FormatMontantPipe } from '../service/formattermontant.services';
                             <div *ngFor="let stock of stocks; let i = index" class="col-span-12 sm:col-span-6 lg:col-span-3 p-2">
                                 <div class="p-6 border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 rounded flex flex-col">
                                     <div class="bg-surface-50 flex justify-center rounded p-6">
+                                    <p-tag  [value]="getStatus(stock.quantiteDisponible)" [severity]="mapSeverity(getSeverity(stock.quantiteDisponible))"></p-tag>
                                         <!-- <div class="relative mx-auto">
                                         <img class="rounded w-full" src="https://primefaces.org/cdn/primevue/images/product/{{ item.image }}" [alt]="item.name" style="max-width: 300px" />
                                         <div class="absolute bg-black/70 rounded-border" [style]="{ left: '4px', top: '4px' }">
@@ -88,8 +89,8 @@ import { FormatMontantPipe } from '../service/formattermontant.services';
                                     <div class="pt-12">
                                         <div class="flex flex-row justify-between items-start gap-2">
                                             <div>
-                                                <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ stock.nomPiece }}</span>
-                                                <div class="text-lg font-medium mt-1">Quantité : {{ stock.quantiteDisponible }}</div>
+                                            <span class="text-lg font-medium mt-2">{{ stock.nomPiece }}</span>
+                                            <div class="font-medium text-surface-500 dark:text-surface-400 text-sm" >Quantité : {{ stock.quantiteDisponible }}</div>
                                             </div>
                                         </div>
                                         <div class="flex flex-col gap-6 mt-6">
@@ -142,27 +143,6 @@ export class Pieces {
     ngOnInit() {
         this.productService.getProductsSmall().then((data) => (this.products = data.slice(0, 6)));
         this.listStocks();
-        /* this.sourceCities = [
-            { name: 'San Francisco', code: 'SF' },
-            { name: 'London', code: 'LDN' },
-            { name: 'Paris', code: 'PRS' },
-            { name: 'Istanbul', code: 'IST' },
-            { name: 'Berlin', code: 'BRL' },
-            { name: 'Barcelona', code: 'BRC' },
-            { name: 'Rome', code: 'RM' }
-        ];
-
-        this.targetCities = [];
-
-        this.orderCities = [
-            { name: 'San Francisco', code: 'SF' },
-            { name: 'London', code: 'LDN' },
-            { name: 'Paris', code: 'PRS' },
-            { name: 'Istanbul', code: 'IST' },
-            { name: 'Berlin', code: 'BRL' },
-            { name: 'Barcelona', code: 'BRC' },
-            { name: 'Rome', code: 'RM' }
-        ]; */
     }
 
     listStocks() {
@@ -181,17 +161,49 @@ export class Pieces {
         }
     }
 
-    getSeverity(product: Product) {
-        switch (product.inventoryStatus) {
-            case 'INSTOCK':
+
+    getStatus(qt:number){
+        if( qt>0 &&qt< 5){
+            return "Faible"
+        }
+        else if(qt>5){
+            return "Suffisant"
+        }
+        else if(qt == 0){
+            return "Insuffisant"    
+        }
+        else{
+            return "tsy mety"
+        }
+    }
+
+    getSeverity(qt:number) {
+        if(qt>0 && qt< 5){
+            return "orange"
+        }
+        else if(qt>5){
+            return "yellow"
+        }
+        else if(qt == 0){
+            return "red"
+        }
+        else{
+            return "tsy mety"
+        }
+    }
+
+    mapSeverity(severity: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | undefined {
+        switch (severity) {
+            case 'blue':
+                return 'info';
+            case 'green':
                 return 'success';
-
-            case 'LOWSTOCK':
-                return 'warn';
-
-            case 'OUTOFSTOCK':
+            case 'yellow':
+                return 'secondary';
+            case 'red':
                 return 'danger';
-
+            case 'orange':
+                return 'warn';
             default:
                 return 'info';
         }

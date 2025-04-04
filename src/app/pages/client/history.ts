@@ -20,6 +20,8 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { Product, ProductService } from '../service/product.service';
+import { ReparationCl, ReparationClService } from '../../services/reparation/reparation.service';
+import { FormatMontantPipe } from '../service/formattermontant.services';
 
 interface Column {
     field: string;
@@ -36,6 +38,7 @@ interface ExportColumn {
     selector: 'app-history',
     standalone: true,
     imports: [
+        FormatMontantPipe,
         CommonModule,
         TableModule,
         FormsModule,
@@ -62,11 +65,10 @@ interface ExportColumn {
         <p-toast position="top-center"></p-toast>
         <p-table
             #dt
-            [value]="products()"
+            [value]="reparations"
             [rows]="10"
-            [columns]="cols"
             [paginator]="true"
-            [globalFilterFields]="['name', 'country.name', 'representative.name', 'status']"
+            [globalFilterFields]="['dateDebut', 'coutFinal', 'etat']"
             [tableStyle]="{ 'min-width': '75rem' }"
             [rowHover]="true"
             dataKey="id"
@@ -85,63 +87,48 @@ interface ExportColumn {
             </ng-template>
             <ng-template #header>
                 <tr>
-                    <th pSortableColumn="name" style="min-width:16rem">
-                        Date et heure
-                        <p-sortIcon field="name" />
+                    <th></th>
+                    <th pSortableColumn="dateDebut" style="min-width:16rem">
+                        Date Debut
+                        <p-sortIcon field="dateDebut" />
                     </th>
-                    <th pSortableColumn="category" style="min-width:10rem">
-                        Type
-                        <p-sortIcon field="category" />
+                    <th pSortableColumn="dateDebut" style="min-width:16rem">
+                        Date Fin
+                        <p-sortIcon field="dateDebut" />
                     </th>
-                    <th pSortableColumn="inventoryStatus" style="min-width: 12rem">
+                    <th style="min-width:10rem">
+                        Description
+                        
+                    </th>
+                    <th styl pSortableColumn="coutFinal" style="min-width:10rem; text-align: right;">
+                        Cout Final
+                        <p-sortIcon field="coutFinal" />
+                    </th>
+                    <th pSortableColumn="etat" style="min-width: 12rem ; text-align: right;">
                         État
-                        <p-sortIcon field="inventoryStatus" />
+                        <p-sortIcon field="etat" />
                     </th>
                     <th style="min-width: 12rem"></th>
                 </tr>
             </ng-template>
 
             <!-- Contenu table -->
-            <ng-template #body let-product>
+            <ng-template #body let-rep>
                 <tr>
-                    <td style="min-width: 16rem">{{ product.name }}</td>
-                    <td>{{ product.category }}</td>
-                    <td>
-                        <p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus))" />
+                    <td></td>
+                    <td style="min-width: 16rem">{{ rep.dateDebut | date: 'dd-MM-yyyy HH:mm' }}</td>
+                    <td style="min-width: 16rem">{{ rep.dateFin | date: 'dd-MM-yyyy HH:mm' }}</td>
+                    <td>{{ rep.descriptionProbleme }}</td>
+                    <td style="text-align: right;">{{rep.coutFinal | formatMontant }} Ar</td>
+                    <td style="text-align: right;">
+                        <p-tag [value]="rep.etat" [severity]="mapSeverity(getSeverity(rep.etat))" />
                     </td>
                     <td>
-                        <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="viewDetail(product)" />
+                        <!-- <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="viewDetail(product)" /> -->
                     </td>
                 </tr>
             </ng-template>
         </p-table>
-
-        <p-dialog [(visible)]="interventionDialog" [style]="{ width: '450px' }" header="Intervention [type d'intervention]" [modal]="true">
-            <ng-template #content>
-                <div class="flex flex-col gap-6">
-                    <div>
-                        <label for="description" class="block font-bold mb-3"><p-tag [value]="product.inventoryStatus" [severity]="mapSeverity(getSeverity(product.inventoryStatus || ''))" /></label>
-                    </div>
-                    <div>
-                        <label for="description" class="block font-bold mb-3">Description</label>
-                        Marque et modèle, Année de mise en circulation, Kilométrage actuel
-                    </div>
-                    <div>
-                        <label for="description" class="block font-bold mb-3">Détails</label>
-                        Marque et modèle, Année de mise en circulation, Kilométrage actuel
-                    </div>
-                    <div>
-                        <label for="description" class="block font-bold mb-3">Devis</label>
-                        Total : 0.00 €
-                    </div>
-                </div>
-            </ng-template>
-
-            <ng-template #footer>
-                <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Exporter" icon="pi pi-upload" (click)="exportPdf()" />
-            </ng-template>
-        </p-dialog>
 
         <p-confirmdialog [style]="{ width: '450px' }" />
         </div>
@@ -149,87 +136,31 @@ interface ExportColumn {
     providers: [MessageService, ProductService, ConfirmationService]
 })
 export class History implements OnInit {
-    interventionDialog: boolean = false;
+    reparations: ReparationCl[] = []
 
-    products = signal<Product[]>([]);
-
-    product!: Product;
-
-    submitted: boolean = false;
-
-    statuses!: any[];
+    reparation!: ReparationCl
 
     @ViewChild('dt') dt!: Table;
 
-    exportColumns!: ExportColumn[];
-
-    cols!: Column[];
-
     constructor(
-        private productService: ProductService,
-        private messageService: MessageService,
-        private confirmationService: ConfirmationService
+        private reparationService: ReparationClService,
     ) { }
 
     ngOnInit() {
-        this.loadDemoData();
-    }
-
-    loadDemoData() {
-        this.productService.getProducts().then((data) => {
-            this.products.set(data);
-        });
-
-        this.statuses = [
-            { label: 'Réparation', value: 'reparation' },
-            { label: 'Révision', value: 'revision' },
-            { label: 'Diagnostic', value: 'diagnostic' }
-        ];
-
-        this.cols = [
-            { field: 'code', header: 'Code', customExportHeader: 'Product Code' },
-            { field: 'name', header: 'Name' },
-            { field: 'price', header: 'Price' },
-            { field: 'category', header: 'Category' }
-        ];
-
-        this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
+        this.loadReparations();
     }
 
     onGlobalFilter(table: Table, event: Event) {
         table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
     }
 
-    viewDetail(product: Product) {
-        this.product = { ...product };
-        this.interventionDialog = true;
+    loadReparations() {
+        this.reparationService.getHistorique().subscribe((data) => {
+            this.reparations = data;
+            console.log('Données de réparation:', this.reparations);
+        });
     }
 
-    hideDialog() {
-        this.interventionDialog = false;
-        this.submitted = false;
-    }
-
-    findIndexById(id: string): number {
-        let index = -1;
-        for (let i = 0; i < this.products().length; i++) {
-            if (this.products()[i].id === id) {
-                index = i;
-                break;
-            }
-        }
-
-        return index;
-    }
-
-    createId(): string {
-        let id = '';
-        var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        for (var i = 0; i < 5; i++) {
-            id += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return id;
-    }
 
     getSeverity(status: string) {
         switch (status) {
@@ -241,7 +172,7 @@ export class History implements OnInit {
                 return 'yellow';
             case 'Annulé':
                 return 'red';
-            case 'Prêt':
+            case 'Pret':
                 return 'orange';
             default:
                 return 'info';

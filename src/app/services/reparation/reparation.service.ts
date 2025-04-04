@@ -6,20 +6,24 @@ import { Observable } from 'rxjs';
     providedIn: 'root'
 })
 export class ReparationClService {
-    private apiUrl = 'http://localhost:5000/reparation';
+    private apiUrl = 'https://m1p12mean-divno-michael-backend.onrender.com/reparation';
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
     getReparations(): Observable<any> {
         return this.http.get(this.apiUrl);
     }
 
-    updateReparation(id: string, rep:any): Observable<any>{
+    updateReparation(id: string, rep: any): Observable<any> {
         return this.http.put(`${this.apiUrl}/${id}`, rep)
-      }
+    }
 
-    setReparation(rep:any): Observable<any>{
-      return this.http.post(this.apiUrl, rep);
+    getHistorique(): Observable<any> {
+        return this.http.get(`${this.apiUrl}/historique`);
+    }
+
+    setReparation(rep: any): Observable<any> {
+        return this.http.post(this.apiUrl, rep);
     }
 }
 

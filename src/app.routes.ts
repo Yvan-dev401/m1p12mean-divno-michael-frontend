@@ -12,7 +12,7 @@ export const appRoutes: Routes = [
     {
         path: '',
         component: AppLayout_Client,
-        canActivate: [AuthGuard],
+        canActivate: [],
         data: { role: 'client' },
         children: [{ path: 'client', loadChildren: () => import('./app/pages/pages.routes_client') }]
     },

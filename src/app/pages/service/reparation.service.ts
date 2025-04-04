@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
     providedIn: 'root'
 })
 export class ReparationService {
-    private apiUrl = 'http://localhost:5000/reparation';
+    private apiUrl = 'https://m1p12mean-divno-michael-backend.onrender.com/reparation';
 
     constructor(private http: HttpClient) {}
 

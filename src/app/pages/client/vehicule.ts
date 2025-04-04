@@ -179,7 +179,9 @@ interface ExportColumn {
             </ng-template>
             <ng-template #footer>
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
-                <p-button label="Enregistrer" icon="pi pi-check" (click)="saveVehicule()" />
+                <p-button label="Enregistrer" icon="pi pi-check"  [disabled]="!newVehi.marque || !newVehi.modele || 
+                     !newVehi.annee || !newVehi.kilometrage || 
+                     !newVehi.plaqueImmatriculation" (click)="saveVehicule()" />
             </ng-template>
         </p-dialog>
 
@@ -251,6 +253,8 @@ export class ListeVehicule implements OnInit {
 
     // products = signal<Product[]>([]);
 
+    isDelete: boolean = false
+
     _id: string = ''
 
     updateVehi = {
@@ -297,6 +301,16 @@ export class ListeVehicule implements OnInit {
     ngOnInit() {
         this.loadVehicules()
     }
+
+    isFormValid(): boolean {
+        return !!(
+          this.newVehi.marque?.trim() &&
+          this.newVehi.modele?.trim() &&
+          this.newVehi.annee?.trim() &&
+          this.newVehi.kilometrage?.trim() &&
+          this.newVehi.plaqueImmatriculation?.trim()
+        );
+      }
 
     saveVehicule() {
         const token = this.authService.getToken()
@@ -371,23 +385,39 @@ export class ListeVehicule implements OnInit {
         this.updateVehiculeD = true;
     }
 
-
-
-    deleteSelectedVehicule() {
+    async deleteSelectedVehicule() {
         this.confirmationService.confirm({
-            message: 'Are you sure you want to delete the selected products?',
+            message: 'Are you sure you want to delete the selected vehicles?',
             header: 'Confirm',
             icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                this.vehiculeService.deleteVehicule("" + this.selectedVehicule[0]._id)
-                this.selectedVehicule = []
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Réussie',
-                    detail: 'Vehicule supprimé avec succès',
-                    life: 3000
-                });
-                this.loadVehicules()
+            accept: async () => {
+                try {
+                    for (const vehicule of this.selectedVehicule) {
+                        if (!vehicule?._id) {
+                            console.warn('Cannot delete vehicle: ID is missing', vehicule);
+                            continue; 
+                        }
+
+                        await this.vehiculeService.deleteVehicule(vehicule._id.toString()).toPromise();
+                    }
+
+                    this.loadVehicules();
+                    this.selectedVehicule = [];
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Successful',
+                        detail: 'Vehicles deleted successfully',
+                        life: 3000
+                    });
+                } catch (error) {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Erreur',
+                        detail: 'Le vehicule est deja en cours de reparation',
+                        life: 3000
+                    });
+                    console.error('Deletion error:', error);
+                }
             }
         });
     }

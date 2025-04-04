@@ -7,29 +7,38 @@ import { Observable } from 'rxjs';
 })
 export class VehiculeService {
 
-  private apiUrl = 'http://localhost:5000/vehicule';
+  private apiUrl = 'https://m1p12mean-divno-michael-backend.onrender.com/vehicule';
 
   constructor(private http: HttpClient) { }
 
-    // getvehiculeById(id: string, user:any): Observable<any>{
-    //   return this.http.get(`${this.apiUrl}/${id}`, user)
-    // }
-  
-    getVehicule(): Observable<any>{
-      return this.http.get(this.apiUrl)
-    }
-  
-    setVehicule(vehicule:any): Observable<any>{
-      return this.http.post(this.apiUrl, vehicule);
-    }
-  
-    updateVehicule(id: string, vehicule:any): Observable<any>{
-      return this.http.put(`${this.apiUrl}/${id}`, vehicule)
-    }
-  
-    deleteVehicule(id: string) : void{
-      this.http.delete(`${this.apiUrl}/${id}`)
-    }
+  // getvehiculeById(id: string, user:any): Observable<any>{
+  //   return this.http.get(`${this.apiUrl}/${id}`, user)
+  // }
+
+  // vehicule.service.ts
+  isVehicleUsed(vehicleId: string): Observable<boolean> {
+    return this.http.get<boolean>(`api/vehicles/${vehicleId}/is-used`);
+  }
+
+  getVehicule(): Observable<any> {
+    return this.http.get(this.apiUrl)
+  }
+
+  getVehiculeListe(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/vehi`)
+  }
+
+  setVehicule(vehicule: any): Observable<any> {
+    return this.http.post(this.apiUrl, vehicule);
+  }
+
+  updateVehicule(id: string, vehicule: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, vehicule)
+  }
+
+  deleteVehicule(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`)
+  }
 
 }
 

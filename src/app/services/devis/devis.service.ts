@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
     providedIn: 'root'
 })
 export class DevisService {
-    private apiUrl = 'http://localhost:5000/devis';
+    private apiUrl = 'https://m1p12mean-divno-michael-backend.onrender.com/devis';
 
     constructor(private http: HttpClient) {}
 

@@ -30,6 +30,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../services/user/auth.service';
 import { DevisService } from '../../services/devis/devis.service';
 import { FormatMontantPipe } from '../service/formattermontant.services';
+import { CustomDatePipe } from '../service/formatterdate.services';
 
 interface Column {
     field: string;
@@ -85,7 +86,7 @@ interface AutoCompleteCompleteEvent {
             [rows]="10"
             [columns]="cols"
             [paginator]="true"
-            [globalFilterFields]="['name', 'country.name', 'representative.name', 'status']"
+            [globalFilterFields]="['dateDebut', 'marque', 'etat', 'nom']"
             [tableStyle]="{ 'min-width': '75rem' }"
             [(selection)]="selectedReparations"
             [rowHover]="true"
@@ -97,10 +98,10 @@ interface AutoCompleteCompleteEvent {
             <ng-template #caption>
                 <div class="flex items-center justify-between">
                     <h5 class="m-0">Liste des interventions en cours</h5>
-                    <!-- <p-iconfield>
+                    <p-iconfield>
                         <p-inputicon styleClass="pi pi-search" />
                         <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher..." />
-                    </p-iconfield> -->
+                    </p-iconfield>
                 </div>
             </ng-template>
             <ng-template #header>
@@ -109,29 +110,29 @@ interface AutoCompleteCompleteEvent {
                         <p-tableHeaderCheckbox />
                     </th> -->
                     <!-- <th style="min-width: 16rem">Type</th> -->
-                    <th pSortableColumn="name" style="min-width:16rem">
+                    <th pSortableColumn="dateDebut" style="min-width:16rem">
                         Date et heure
-                        <p-sortIcon field="name" />
+                        <p-sortIcon field="dateDebut" />
                     </th>
-                    <th pSortableColumn="category" style="min-width:10rem">
+                    <th pSortableColumn="marque" style="min-width:10rem">
                         Voiture
-                        <p-sortIcon field="category" />
+                        <p-sortIcon field="marque" />
                     </th>
                     <th pSortableColumn="category" style="min-width:10rem">
                         Description
-                        <p-sortIcon field="category" />
+                        <!-- <p-sortIcon field="category" /> -->
                     </th>
                     <th pSortableColumn="rating" style="min-width: 12rem">
                         Progression
-                        <p-sortIcon field="rating" />
+                        <!-- <p-sortIcon field="rating" /> -->
                     </th>
-                    <th pSortableColumn="inventoryStatus" style="min-width: 12rem">
+                    <th pSortableColumn="etat" style="min-width: 12rem">
                         État
-                        <p-sortIcon field="inventoryStatus" />
+                        <p-sortIcon field="etat" />
                     </th>
-                    <th pSortableColumn="name" style="min-width:16rem">
+                    <th pSortableColumn="nom" style="min-width:16rem">
                         Mécanicien
-                        <p-sortIcon field="name" />
+                        <p-sortIcon field="nom" />
                     </th>
                     <th style="min-width: 12rem"></th>
                 </tr>
@@ -156,8 +157,8 @@ interface AutoCompleteCompleteEvent {
                     </td>
                     <td>
                         <p-button icon="pi pi-eye" severity="info" class="mr-2" [rounded]="true" [outlined]="true" (click)="detailIntervention(reparation,reparation._id,reparation.marque,reparation.modele)" />
-                        <p-button icon="pi pi-cog" severity="help" class="mr-2" [disabled]=" reparation.etat == 'en cours' || reparation.etat == 'Términé'" [rounded]="true" [outlined]="true"  (click)="listPiece(reparation)" />
-                        <p-button icon="pi pi-check" class="mr-2" [rounded]="true" [outlined]="true" (click)="taskProduct(reparation)" />
+                        <p-button icon="pi pi-cog" severity="help" class="mr-2" [disabled]=" reparation.etat == 'En cours' || reparation.etat == 'Terminé'" [rounded]="true" [outlined]="true"  (click)="listPiece(reparation)" />
+                        <p-button icon="pi pi-check" class="mr-2" [rounded]="true" [outlined]="true" [disabled]="reparation.etat =='Annulé' || reparation.etat == 'Terminé' " (click)="taskProduct(reparation)" />
                     </td>
                 </tr>
             </ng-template>
@@ -217,7 +218,7 @@ interface AutoCompleteCompleteEvent {
             </ng-template>
         </p-dialog>
 
-        <p-dialog [(visible)]="pieceDialog" [style]="{ width: '500px', height: '500px' }" header="Intervention [type d'intervention]" [modal]="true">
+        <p-dialog [(visible)]="pieceDialog" [style]="{ width: '500px', height: '500px' }" header="Intervention" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
@@ -235,7 +236,7 @@ interface AutoCompleteCompleteEvent {
                                 [suggestions]="filteredStocks"
                                 (completeMethod)="filterStock($event)"
                                 optionLabel="nomPiece"
-                                placeholder="Pièces"
+                                placeholder="Recherche des pièces"
                                 class="custom-autocomplete"
                                 emptyMessage="Résultat non trouvé"
                             ></p-autocomplete>
@@ -250,11 +251,12 @@ interface AutoCompleteCompleteEvent {
             <ng-template #footer>
                 <p-button icon="pi pi-plus" [rounded]="true" [text]="true" [raised]="true" severity="success" [style]="{ display: 'block', margin: '0 auto' }" (click)="duplicateItem()" />
                 <p-button label="Annuler" icon="pi pi-times" text (click)="hideDialog()" />
+
                 <p-button label="Accepter" icon="pi pi-check" (click)="saveTask()" />
             </ng-template>
         </p-dialog>
 
-        <p-dialog [(visible)]="taskDialog" [style]="{ width: '500px' }" header="Intervention [type d'intervention]" [modal]="true">
+        <p-dialog [(visible)]="taskDialog" [style]="{ width: '500px' }" header="Intervention" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
                     <div>
@@ -505,52 +507,71 @@ export class Dashboard implements OnInit {
     saveTask() {
         console.log('Items à sauvegarder :', this.items);
 
-        const itemsToSave = this.items.map((item) => ({
+        var itemsToSave = this.items.map((item) => ({
             stockId: item.selectedStock._id,
             nomPiece: item.selectedStock.nomPiece,
             quantite: item.quantity,
-            reparationId: this.reparation._id, // Ajout de l'ID de la réparation
+            reparationId: this.reparation._id,
             etat: false
         }));
 
-        this.devisServices.insert(itemsToSave).subscribe(
-            (response) => {
-                console.log('Réponse :', response);
-                // this.hideDialog();
+        console.log(this.devisServices.checkQuantity(itemsToSave))
 
-                const token = this.authService.getToken();
-                const updateData = {
-                    mecanicienId: token.id,
-                    etat: "pret"
-                };
+        if (this.devisServices.checkQuantity(itemsToSave) > 0) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Quantite zero',
+                detail: 'Vous devriez remplir la quantite',
+                life: 3000
+            });
+           
+        }
+        else {
+            this.devisServices.insert(itemsToSave).subscribe(
+                (response) => {
+                    console.log('Réponse :', response);
+                    // this.hideDialog();
 
-                this.reparationService.updateReparation(this.reparation._id, updateData).subscribe(
-                    (response) => {
-                        this.loadReparations();
-                        console.log('Intervention mise à jour avec succès :', response);
-                        this.messageService.add({
-                            severity: 'success',
-                            summary: 'Réussie',
-                            detail: 'Devis ajouté',
-                            life: 3000
-                        });
-                        // Recharger les interventions après la mise à jour
-                    },
-                    (error) => {
-                        console.log(updateData);
-                        console.error("Erreur lors de la mise à jour de l'intervention :", error);
-                    }
-                );
+                    const token = this.authService.getToken();
+                    const updateData = {
+                        mecanicienId: token.id,
+                        etat: "Pret"
+                    };
 
-                this.pieceDialog = false;
-                console.log(this.reparation)
-                // this.interventionOpen(this.reparation)
-                // window.location.reload();
-            },
-            (error) => {
-                console.error('Erreur :', error);
-            }
-        );
+                    this.reparationService.updateReparation(this.reparation._id, updateData).subscribe(
+                        (response) => {
+                            this.loadReparations();
+                            console.log('Intervention mise à jour avec succès :', response);
+                            this.messageService.add({
+                                severity: 'success',
+                                summary: 'Réussie',
+                                detail: 'Devis ajouté',
+                                life: 3000
+                            });
+                            // Recharger les interventions après la mise à jour
+                        },
+                        (error) => {
+                            console.log(updateData);
+                            console.error("Erreur lors de la mise à jour de l'intervention :", error);
+                        }
+                    );
+
+                    this.pieceDialog = false;
+                    console.log(this.reparation)
+                    // this.interventionOpen(this.reparation)
+                    // window.location.reload();
+                },
+                (error) => {
+                    console.error('Erreur :', error);
+                }
+            );
+        }
+
+
+    }
+
+    onGlobalFilter(table: Table, event: Event) {
+        table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
     }
 
     updateInterventionStatus(reparation: Reparation) {
@@ -577,7 +598,7 @@ export class Dashboard implements OnInit {
                 return 'yellow';
             case 'Annulé':
                 return 'red';
-            case 'Prêt':
+            case 'Pret':
                 return 'orange';
             default:
                 return 'info';

@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class PaiementService {
-    private apiUrl = 'http://localhost:5000/paiement';
+    private apiUrl = 'https://m1p12mean-divno-michael-backend.onrender.com/paiement';
 
     constructor(private http: HttpClient) {}
 

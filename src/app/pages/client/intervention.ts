@@ -140,7 +140,7 @@ interface ExportColumn {
                         <p-tableCheckbox [value]="reparation" />
                     </td>
                     <!-- <td style="min-width: 12rem">{{ reparation.code }}</td> -->
-                    <td style="min-width: 16rem">{{ reparation.dateDebut }}</td>
+                    <td style="min-width: 16rem">{{ reparation.dateDebut| date: 'dd-MM-yyyy HH:mm' }}</td>
                     <td style="min-width: 16rem">{{ reparation.marque }} | {{reparation.modele}}</td>
                     <!-- <td>{{ reparation.price | currency: 'USD' }}</td> -->
                     <td>{{ reparation.descriptionProbleme }}</td>
@@ -266,19 +266,20 @@ export class Intervention implements OnInit {
         vehiculeId: '',
         mecanicienId: '',
         descriptionProbleme: '',
-        etat: 'en attente',
+        etat: 'En attente',
         dateDebut: '',
-        dateFin: '',
+        dateFin:new Date(),
         notesTechniques: '',
         coutFinal: ''
     }
 
     updateEnCours = {
-        etat: 'en cours'
+        etat: 'En cours',
+        coutFinal: 0
     }
 
     updateAnnule = {
-        etat: 'annulé'
+        etat: 'Annulé'
     }
 
 
@@ -309,7 +310,7 @@ export class Intervention implements OnInit {
 
     submitted: boolean = false;
 
-    vehiListe!: any[];
+    vehiListe: any[] = [];
 
     @ViewChild('dt') dt!: Table;
 
@@ -347,19 +348,13 @@ export class Intervention implements OnInit {
     ngOnInit() {
         this.loadReparations()
         this.loadVehicules()
-        // this.vehiListe = [
-        //     { label: 'Mazda - BT50', value: '67d0002e360d5465cfade482' },
-        //     { label: 'Audi - RS6', value: '67d009fa8e4dcccf0023d4e6' }
-        // ];
     }
 
     loadVehicules() {
-        // this.vehiculeService.getVehicule().subscribe((data) => {
-        //     this.vehiListe = data.map(d => {
-        //         "label" : d._id
-        //     });
-        //     console.log('Données', this.vehiListe);
-        // });
+        this.vehiculeService.getVehiculeListe().subscribe((data) => {
+            this.vehiListe = data
+            console.log('Données', this.vehiListe);
+        });
     }
 
     loadReparations() {
@@ -449,9 +444,9 @@ export class Intervention implements OnInit {
             vehiculeId: '',
             mecanicienId: '',
             descriptionProbleme: '',
-            etat: 'en attente',
+            etat: 'En attente',
             dateDebut: '',
-            dateFin: '',
+            dateFin: new Date(),
             notesTechniques: '',
             coutFinal: ''
         }
@@ -468,6 +463,11 @@ export class Intervention implements OnInit {
             clientId: token.id,
         }
 
+        this.updateEnCours = {
+            etat: "En cours" ,
+            coutFinal : montant
+        }
+
         this.paiementService.setPaiement(this.newPaiement).subscribe(
             (response) => {
                 console.log(response)
@@ -476,7 +476,7 @@ export class Intervention implements OnInit {
             }
         )
 
-        this.reparationService.updateReparation(id, update).subscribe(
+        this.reparationService.updateReparation(id, this.updateEnCours).subscribe(
             (response) => {
                 this.repId = ""
                 this.loadReparations()
@@ -528,15 +528,15 @@ export class Intervention implements OnInit {
 
     getSeverity(status: string) {
         switch (status) {
-            case 'en cours':
+            case 'En cours':
                 return 'blue';
-            case 'terminé':
+            case 'Terminé':
                 return 'green';
-            case 'en attente':
+            case 'En attente':
                 return 'yellow';
-            case 'annulé':
+            case 'Annulé':
                 return 'red';
-            case 'pret':
+            case 'Pret':
                 return 'orange';
             default:
                 return 'info';

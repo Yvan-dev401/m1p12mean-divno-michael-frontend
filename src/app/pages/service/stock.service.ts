@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
     providedIn: 'root'
 })
 export class StockService {
-    private apiUrl = 'http://localhost:5000/stock';
+    private apiUrl = 'https://m1p12mean-divno-michael-backend.onrender.com/stock';
 
     constructor(private http: HttpClient) {}
 
