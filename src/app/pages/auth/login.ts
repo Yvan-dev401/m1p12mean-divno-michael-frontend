@@ -111,6 +111,7 @@ export class Login {
     login(): void {
         this.userService.login(this.authUser).subscribe(
             (response) => {
+                localStorage.setItem('auth_token', response.token);
                 if (response.data == 'client') {
                     this.router.navigate(['client/vehicule']);
                 }
