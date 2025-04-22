@@ -24,7 +24,7 @@ export class UserService {
   }
 
   login(user:any): Observable<any>{
-    return this.http.post(`${this.apiUrl}/login`, user, { withCredentials: true });
+    return this.http.post(`${this.apiUrl}/login`, { withCredentials: true }, user );
   }
 
   logout(): Observable<any>{
