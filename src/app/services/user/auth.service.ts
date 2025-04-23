@@ -8,9 +8,13 @@ import { jwtDecode } from 'jwt-decode';
 export class AuthService {
     constructor(private cookieService: CookieService) { }
 
+
     getSessionToken(): string | null {
-        return this.cookieService.get('SessionID') || null;
+        return localStorage.getItem('auth_token');
     }
+    // getSessionToken(): string | null {
+    //     return this.cookieService.get('SessionID') || null;
+    // }
 
     decodeToken(token: string): any {
         try {
@@ -33,9 +37,9 @@ export class AuthService {
     isTokenExpired(token: string): boolean {
         const token_decode = this.decodeToken(token);
         if (token_decode && token_decode.exp) {
-          const expirationDate = new Date(token_decode.exp * 1000);
-          return expirationDate < new Date();
+            const expirationDate = new Date(token_decode.exp * 1000);
+            return expirationDate < new Date();
         }
         return true;
-      }
+    }
 }
