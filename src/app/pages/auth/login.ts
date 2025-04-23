@@ -54,7 +54,7 @@ import { TabsModule } from 'primeng/tabs';
 
                                     <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary" routerLink="/auth/signup">S'inscrire?</span>
                                 </div>
-                                <p-button type="submit" label="Connexion" styleClass="w-full" routerLink="/"></p-button>
+                                <p-button type="submit" [disabled]="isLoading" label="Connexion" styleClass="w-full" routerLink="/"></p-button>
                             </form>
                         </div>
                     </div>
