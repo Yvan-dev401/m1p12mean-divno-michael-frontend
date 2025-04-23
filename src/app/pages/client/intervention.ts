@@ -249,8 +249,8 @@ interface ExportColumn {
     </ng-template>
 
     <ng-template #footer> 
-        <p-button label="Refuser" [disabled]="details.length==0 || reparation.etat == 'En cours' || reparation.etat == 'Annulé'" icon="pi pi-times" (click)="refuserDevis(repId, updateAnnule)" />
-        <p-button label="Payer" [disabled]="details.length==0 || reparation.etat == 'En cours' || reparation.etat == 'Annulé'" icon="pi pi-check" (click)="acceptDevis(repId, updateEnCours,total)" />
+        <p-button label="Refuser" [disabled]="details.length==0 || reparation.etat == 'En cours' || reparation.etat == 'Annulé' || reparation.etat == 'Terminé'" icon="pi pi-times" (click)="refuserDevis(repId, updateAnnule)" />
+        <p-button label="Payer" [disabled]="details.length==0 || reparation.etat == 'En cours' || reparation.etat == 'Annulé' || reparation.etat == 'Terminé'" icon="pi pi-check" (click)="acceptDevis(repId, updateEnCours,total)" />
     </ng-template>
 </p-dialog>
 
