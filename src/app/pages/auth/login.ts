@@ -70,6 +70,8 @@ export class Login {
 
     checked: boolean = false;
 
+    isLoading: boolean = false;
+
     message = '';
 
     activeTab: number = 0;
@@ -109,6 +111,7 @@ export class Login {
     }
 
     login(): void {
+        this.isLoading = true
         this.userService.login(this.authUser).subscribe(
             (response) => {
                 localStorage.setItem('auth_token', response.token);
@@ -121,9 +124,11 @@ export class Login {
                 if (response.data == 'manager') {
                     this.router.navigate(['manager/dashboard']);
                 }
+                this.isLoading = false
                 console.log('Réponse :', response);
             },
             (error) => {
+                this.isLoading = false
                 if (error.status === 401) {
                     this.message = error.error.message;
                 } else {
