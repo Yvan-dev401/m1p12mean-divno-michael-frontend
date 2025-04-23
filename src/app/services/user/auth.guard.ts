@@ -9,27 +9,27 @@ export class AuthGuard implements CanActivate {
   constructor(private authService: AuthService, private router: Router) {}
 
   canActivate(route : ActivatedRouteSnapshot): boolean {
-    const token = true
-    console.log("token",localStorage.getItem('auth_token'));
-    // const token = this.authService.getToken();
+    const token = this.authService.getToken();
+    console.log("tokensss", token)
     // console.log("mlkfjmsdlj")
     if( token ){
-      return false
-      // const role = token.role;
-      // const requiredRole = route.data['role']
-      // console.log("cookie",token.id)
+      console.log("true")
+      const role = token.role;
+      const requiredRole = route.data['role']
+      console.log("cookie",token.id)
 
-      // if(role == requiredRole){
-      //   return true;
-      // }
-      // else{
-      //   this.router.navigate(['/auth/access'])
-      //   return false;
-      // }
+      if(role == requiredRole){
+        return true;
+      }
+      else{
+        this.router.navigate(['/auth/access'])
+        return false;
+      }
     }
     else{
+      console.log("false")
       // this.router.navigate(['/auth/login'])
-      //this.router.navigate(['/']);
+      this.router.navigate(['/']);
       return false
     }
   }
