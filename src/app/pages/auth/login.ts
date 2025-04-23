@@ -25,7 +25,7 @@ import { TabsModule } from 'primeng/tabs';
                     <p-tablist>
                         <p-tab [value]="0">Client</p-tab>
                         <p-tab [value]="1">Mécanicien</p-tab>
-                        <!-- <p-tab [value]="2">Manager</p-tab> -->
+                        <p-tab [value]="2">Manager</p-tab>
                     </p-tablist>
                 </p-tabs>
                 <div style="border-radius: 56px; margin-top: 50px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">

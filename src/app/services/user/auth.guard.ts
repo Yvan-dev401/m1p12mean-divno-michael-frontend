@@ -13,10 +13,10 @@ export class AuthGuard implements CanActivate {
     console.log("tokensss", token)
     // console.log("mlkfjmsdlj")
     if( token ){
-      console.log("true")
+      // console.log("true")
       const role = token.role;
       const requiredRole = route.data['role']
-      console.log("cookie",token.id)
+      console.log("ID",token.id)
 
       if(role == requiredRole){
         return true;
@@ -27,7 +27,7 @@ export class AuthGuard implements CanActivate {
       }
     }
     else{
-      console.log("false")
+      // console.log("false")
       // this.router.navigate(['/auth/login'])
       this.router.navigate(['/']);
       return false
