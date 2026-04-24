@@ -26,7 +26,7 @@ import { response } from 'express';
                 <svg viewBox="0 0 54 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <!-- SVG content -->
                 </svg>
-                <span style="text-align: center; color: green;">m1p12mean-Divno-Michael</span>
+                <span style="text-align: center; color: green;">Bienvenue</span>
             </a>
         </div>
         <!-- <div class="layout-topbar-center">
